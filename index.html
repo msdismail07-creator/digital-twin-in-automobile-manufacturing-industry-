@@ -1,0 +1,3168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TWIN DRIVE // Secure Industrial IoT, AI Inspection & Digital Twin Orchestrator</title>
+    <!-- Google Fonts: Space Grotesk (Engineering Headings), Plus Jakarta Sans (Precision UI/Body), JetBrains Mono (Telemetry/Mono), Chakra Petch (HUD Accents) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Three.js & OrbitControls -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        :root {
+            --bg-dark: #060204;
+            --bg-surface: #0e0407;
+            --bg-panel: rgba(18, 6, 10, 0.94);
+            --bg-card: rgba(28, 8, 14, 0.82);
+            --border-cyan: rgba(255, 42, 85, 0.28);
+            --border-bright: #ff2a55;
+            --cyan-glow: rgba(255, 42, 85, 0.45);
+            --neon-cyan: #ff2a55;
+            --neon-blue: #dc2626;
+            --neon-red: #ff1744;
+            --neon-crimson: #e11d48;
+            --neon-ruby: #ff0055;
+            --neon-rose: #ff4d6d;
+            --neon-amber: #ffb700;
+            --neon-green: #00ff88;
+            --text-main: #f8fafc;
+            --text-muted: #a89299;
+            --font-head: 'Space Grotesk', -apple-system, sans-serif;
+            --font-sub: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --font-ui: 'Plus Jakarta Sans', -apple-system, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-sub);
+            overflow-x: hidden;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(255, 42, 85, 0.12) 0%, transparent 65%),
+                linear-gradient(to bottom, #060204, #020102);
+        }
+
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 42, 85, 0.035) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 42, 85, 0.035) 1px, transparent 1px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* =========================================================================
+           1. STARTUP SPLASH SCREEN
+           ========================================================================= */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle at center, #160509 0%, #050102 100%);
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 24px;
+            transition: opacity 0.6s ease, visibility 0.6s;
+        }
+
+        .splash-inner {
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .splash-badge {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            letter-spacing: 3px;
+            color: var(--neon-cyan);
+            border: 1px solid var(--border-cyan);
+            padding: 6px 18px;
+            border-radius: 20px;
+            background: rgba(255, 42, 85, 0.06);
+            text-transform: uppercase;
+        }
+
+        .splash-title {
+            font-family: var(--font-head);
+            font-size: 3.8rem;
+            font-weight: 800;
+            letter-spacing: 6px;
+            background: linear-gradient(135deg, #ffffff 25%, var(--neon-cyan) 85%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 35px rgba(255, 42, 85, 0.65);
+        }
+
+        .splash-credits {
+            font-family: var(--font-mono);
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--neon-cyan);
+            letter-spacing: 2px;
+            border-top: 1px solid rgba(255, 42, 85, 0.35);
+            border-bottom: 1px solid rgba(255, 42, 85, 0.35);
+            padding: 12px 24px;
+            text-transform: uppercase;
+            background: rgba(255, 42, 85, 0.06);
+        }
+
+        .splash-desc {
+            font-family: var(--font-sub);
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 680px;
+            line-height: 1.6;
+        }
+
+        .splash-btn {
+            margin-top: 14px;
+            background: linear-gradient(135deg, #ff2a55, #be123c);
+            color: #ffffff;
+            font-family: var(--font-head);
+            font-weight: 700;
+            font-size: 1.05rem;
+            padding: 14px 40px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 25px rgba(255, 42, 85, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .splash-btn:hover {
+            transform: scale(1.04);
+            box-shadow: 0 0 40px rgba(255, 42, 85, 0.85);
+        }
+
+        /* =========================================================================
+           2. PERSISTENT APPLICATION HEADER
+           ========================================================================= */
+        header {
+            position: relative;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 24px;
+            background: rgba(14, 5, 8, 0.95);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--border-cyan);
+            box-shadow: 0 4px 25px rgba(0,0,0,0.7);
+            height: 60px;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-logo-hex {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #ff2a55, #be123c);
+            border-radius: 8px;
+            display: grid;
+            place-items: center;
+            color: #ffffff;
+            box-shadow: 0 0 15px var(--cyan-glow);
+        }
+
+        .brand-name-h1 {
+            font-family: var(--font-head);
+            font-size: 1.35rem;
+            font-weight: 900;
+            letter-spacing: 3px;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        .brand-name-h1 span {
+            color: var(--neon-cyan);
+            text-shadow: 0 0 12px var(--cyan-glow);
+        }
+
+        /* Module Tabs in Header */
+        .module-nav-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(18, 6, 11, 0.7);
+            padding: 4px;
+            border: 1px solid var(--border-cyan);
+            border-radius: 6px;
+        }
+
+        .mod-nav-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            padding: 6px 14px;
+            border-radius: 4px;
+            font-family: var(--font-sub);
+            font-weight: 700;
+            font-size: 0.82rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+        }
+
+        .mod-nav-btn:hover {
+            color: #fff;
+            background: rgba(255, 42, 85, 0.1);
+            border-color: rgba(255, 42, 85, 0.3);
+        }
+
+        .mod-nav-btn.active {
+            background: linear-gradient(135deg, rgba(255, 42, 85, 0.35), rgba(190, 18, 60, 0.45));
+            border-color: var(--neon-cyan);
+            color: #fff;
+            box-shadow: 0 0 12px rgba(255, 42, 85, 0.4);
+        }
+
+        .lock-icon {
+            width: 12px;
+            height: 12px;
+            color: var(--neon-amber);
+        }
+
+        .header-auth-badge {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-pill {
+            font-family: var(--font-mono);
+            font-size: 0.74rem;
+            color: var(--neon-amber);
+            border: 1px solid rgba(255, 183, 0, 0.3);
+            padding: 4px 10px;
+            border-radius: 4px;
+            background: rgba(255, 183, 0, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-auth-action {
+            background: rgba(255, 42, 85, 0.18);
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-family: var(--font-sub);
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-auth-action:hover {
+            background: var(--neon-cyan);
+            color: #ffffff;
+        }
+
+        /* =========================================================================
+           3. STRUCTURAL MODULE OPENING BANNER
+           ========================================================================= */
+        .module-opening-banner {
+            position: relative;
+            z-index: 90;
+            background: linear-gradient(90deg, rgba(16, 5, 9, 0.96), rgba(25, 8, 14, 0.90), rgba(16, 5, 9, 0.96));
+            border-bottom: 1px solid var(--border-cyan);
+            padding: 8px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 44px;
+        }
+
+        .mob-title-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .mob-main-title {
+            font-family: var(--font-head);
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: 2px;
+        }
+
+        .mob-divider {
+            color: var(--border-cyan);
+            font-size: 1.1rem;
+        }
+
+        .mob-sub-title {
+            font-family: var(--font-head);
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--neon-cyan);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .mob-dev-tag {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-left: 8px;
+        }
+
+        .mob-dev-tag span {
+            color: var(--neon-cyan);
+            font-weight: bold;
+        }
+
+        .cyber-select {
+            background: rgba(18, 6, 11, 0.95);
+            color: var(--neon-cyan);
+            border: 1px solid var(--border-cyan);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            outline: none;
+            cursor: pointer;
+        }
+
+        /* =========================================================================
+           4. MAIN CONTENT STAGE (NO GAPS - CLEAN FIXED/FLEX HEIGHT)
+           ========================================================================= */
+        .main-stage {
+            position: relative;
+            z-index: 5;
+            height: calc(100vh - 104px);
+            padding: 10px 16px;
+            overflow: hidden;
+        }
+
+        .module-view {
+            display: none;
+            height: 100%;
+            width: 100%;
+        }
+
+        .module-view.active {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Cyber Glass Panels */
+        .cyber-panel {
+            background: var(--bg-panel);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-cyan);
+            border-radius: 6px;
+            box-shadow: inset 0 0 20px rgba(255, 42, 85, 0.03);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cyber-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 8px;
+            height: 8px;
+            border-top: 2px solid var(--neon-cyan);
+            border-left: 2px solid var(--neon-cyan);
+        }
+
+        .cyber-panel::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 8px;
+            height: 8px;
+            border-bottom: 2px solid var(--neon-cyan);
+            border-right: 2px solid var(--neon-cyan);
+        }
+
+        .panel-head {
+            padding: 8px 12px;
+            background: rgba(255, 42, 85, 0.06);
+            border-bottom: 1px solid var(--border-cyan);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 38px;
+            flex-shrink: 0;
+        }
+
+        .panel-head-title {
+            font-family: var(--font-head);
+            font-size: 0.82rem;
+            letter-spacing: 1.5px;
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-body-content {
+            padding: 10px 12px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .badge-pass {
+            font-family: var(--font-head);
+            font-size: 0.85rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            color: var(--neon-green);
+            background: rgba(0, 255, 136, 0.12);
+            border: 1px solid var(--neon-green);
+            padding: 4px 12px;
+            border-radius: 4px;
+            box-shadow: 0 0 12px rgba(0, 255, 136, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge-fail {
+            font-family: var(--font-head);
+            font-size: 0.85rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            color: var(--neon-red);
+            background: rgba(255, 42, 95, 0.15);
+            border: 1px solid var(--neon-red);
+            padding: 4px 12px;
+            border-radius: 4px;
+            box-shadow: 0 0 12px rgba(255, 42, 95, 0.35);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .cyber-btn {
+            background: linear-gradient(135deg, rgba(255, 42, 85, 0.28), rgba(190, 18, 60, 0.45));
+            border: 1px solid var(--neon-cyan);
+            color: #fff;
+            font-family: var(--font-head);
+            font-size: 0.8rem;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .cyber-btn:hover {
+            background: var(--neon-cyan);
+            color: #ffffff;
+            box-shadow: 0 0 16px var(--cyan-glow);
+        }
+
+        .cyber-btn.danger {
+            background: linear-gradient(135deg, rgba(255, 42, 95, 0.3), rgba(255, 42, 95, 0.6));
+            border-color: var(--neon-red);
+        }
+        .cyber-btn.danger:hover {
+            background: var(--neon-red);
+            color: #fff;
+            box-shadow: 0 0 16px rgba(255, 42, 95, 0.6);
+        }
+
+        /* =========================================================================
+           MODULE 3: AETHER DIGITAL TWIN DASHBOARD LAYOUT (PIXEL PERFECT, ZERO GAPS)
+           ========================================================================= */
+        .dt-top-selector-bar {
+            height: 42px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(16, 6, 10, 0.9);
+            border: 1px solid var(--border-cyan);
+            padding: 4px 12px;
+            border-radius: 6px;
+            flex-shrink: 0;
+        }
+
+        .dt-vehicle-tabs {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dt-v-tab {
+            background: rgba(22, 8, 14, 0.7);
+            border: 1px solid rgba(255, 42, 85, 0.18);
+            color: var(--text-muted);
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-family: var(--font-sub);
+            font-weight: 700;
+            font-size: 0.78rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+
+        .dt-v-tab:hover {
+            color: #fff;
+            border-color: var(--neon-cyan);
+        }
+
+        .dt-v-tab.active {
+            background: linear-gradient(135deg, rgba(255, 42, 85, 0.32), rgba(190, 18, 60, 0.5));
+            border-color: var(--neon-cyan);
+            color: #fff;
+            box-shadow: 0 0 12px var(--cyan-glow);
+        }
+
+        /* 3-Column Workspace filling remaining height */
+        .dt-workspace-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 290px 1fr 370px;
+            gap: 10px;
+            min-height: 0; /* Critical for inner scrolling */
+        }
+
+        .dt-viewport-panel {
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(0, 243, 255, 0.35) !important;
+            background: radial-gradient(ellipse at center, #06192d 0%, #020813 85%) !important;
+            box-shadow: inset 0 0 45px rgba(0, 243, 255, 0.08), 0 0 20px rgba(0, 243, 255, 0.12);
+        }
+
+        #three-canvas-container {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .dt-hud-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            z-index: 2;
+        }
+
+        .dt-hud-box {
+            background: rgba(2, 12, 26, 0.88);
+            border: 1px solid rgba(0, 243, 255, 0.45);
+            backdrop-filter: blur(8px);
+            padding: 6px 12px;
+            border-radius: 4px;
+            pointer-events: auto;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.15);
+        }
+
+        .dt-hud-title {
+            font-size: 0.65rem;
+            color: #38bdf8;
+            font-family: var(--font-mono);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .dt-hud-val {
+            font-family: var(--font-head);
+            font-size: 1.05rem;
+            color: #e0f2fe;
+            text-shadow: 0 0 8px rgba(0, 243, 255, 0.5);
+        }
+
+        .scanline {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                rgba(0, 243, 255, 0),
+                rgba(0, 243, 255, 0.08) 50%,
+                rgba(0, 243, 255, 0)
+            );
+            animation: scan 8s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes scan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+
+        /* Component List */
+        .component-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .component-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 42, 85, 0.18);
+            border-radius: 4px;
+            padding: 8px 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .component-card:hover {
+            border-color: var(--neon-cyan);
+            background: rgba(255, 42, 85, 0.12);
+            transform: translateX(2px);
+        }
+
+        .component-card.active {
+            border-color: var(--neon-cyan);
+            background: rgba(255, 42, 85, 0.22);
+            box-shadow: 0 0 10px rgba(255, 42, 85, 0.28);
+        }
+
+        .comp-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .comp-icon {
+            color: var(--neon-cyan);
+            width: 16px;
+            height: 16px;
+        }
+
+        .comp-name {
+            font-weight: 600;
+            font-size: 0.82rem;
+        }
+
+        .comp-status {
+            font-size: 0.66rem;
+            font-family: var(--font-mono);
+            padding: 2px 6px;
+            border-radius: 3px;
+            background: rgba(0, 255, 136, 0.15);
+            color: var(--neon-green);
+            border: 1px solid var(--neon-green);
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.76rem;
+            padding: 3px 0;
+            border-bottom: 1px dotted rgba(255,255,255,0.08);
+        }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-label { color: var(--text-muted); }
+        .detail-val { font-family: var(--font-mono); color: var(--neon-cyan); font-weight: bold; }
+
+        .telemetry-tabs {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 3px;
+            background: rgba(0,0,0,0.4);
+            padding: 3px;
+            border-bottom: 1px solid var(--border-cyan);
+            flex-shrink: 0;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 6px 2px;
+            font-family: var(--font-sub);
+            font-weight: 700;
+            font-size: 0.74rem;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.2s ease;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .tab-btn:hover {
+            color: #fff;
+            background: rgba(255, 42, 85, 0.1);
+        }
+
+        .tab-btn.active {
+            background: var(--neon-cyan);
+            color: #ffffff;
+            box-shadow: 0 0 10px var(--cyan-glow);
+        }
+
+        .tab-pane {
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .tab-pane.active {
+            display: flex;
+        }
+
+        .slider-group {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 42, 85, 0.14);
+            border-radius: 4px;
+            padding: 8px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        .slider-val {
+            font-family: var(--font-mono);
+            color: var(--neon-cyan);
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: rgba(255, 42, 85, 0.12);
+            height: 5px;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--neon-cyan);
+            cursor: pointer;
+            box-shadow: 0 0 6px var(--neon-cyan);
+        }
+
+        /* =========================================================================
+           MODULE 1, 2, 4 LAYOUTS
+           ========================================================================= */
+        .automation-grid, .vision-grid {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 12px;
+            height: 100%;
+        }
+
+        .pdm-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            height: 100%;
+        }
+
+        .workflow-stepper {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .step-node {
+            background: var(--bg-card);
+            border: 1px solid var(--border-cyan);
+            border-radius: 6px;
+            padding: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .step-node.active {
+            border-color: var(--neon-cyan);
+            background: rgba(255, 42, 85, 0.15);
+            box-shadow: 0 0 16px rgba(255, 42, 85, 0.3);
+        }
+
+        .step-node.completed {
+            border-color: var(--neon-green);
+            background: rgba(0, 255, 136, 0.08);
+        }
+
+        .step-num {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--neon-cyan);
+            margin-bottom: 4px;
+        }
+
+        .step-name {
+            font-family: var(--font-head);
+            font-size: 0.86rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .step-status {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+
+        .workflow-canvas-box {
+            height: 260px;
+            background: rgba(10, 3, 5, 0.9);
+            border: 1px solid var(--border-cyan);
+            border-radius: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .vision-feed-container {
+            position: relative;
+            height: 380px;
+            background: #080204;
+            border: 1px solid var(--border-cyan);
+            border-radius: 6px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #vision-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .vision-reticle {
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--neon-cyan);
+            pointer-events: none;
+            background: rgba(0,0,0,0.7);
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid var(--border-cyan);
+        }
+
+        .rul-kpi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-cyan);
+            border-radius: 6px;
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .rul-kpi-val {
+            font-family: var(--font-head);
+            font-size: 2rem;
+            color: var(--neon-cyan);
+            font-weight: 900;
+        }
+
+        .chart-box {
+            height: 180px;
+            background: rgba(10, 3, 5, 0.92);
+            border: 1px solid var(--border-cyan);
+            border-radius: 6px;
+            padding: 8px;
+        }
+
+        /* =========================================================================
+           5. MANDATORY SECURITY ACCESS BARRIER (BLOCKING INTERRUPT OVERLAY)
+           ========================================================================= */
+        #auth-interrupt-barrier {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(6, 2, 4, 0.94);
+            backdrop-filter: blur(12px);
+            z-index: 99990;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        #auth-interrupt-barrier.active {
+            display: flex;
+        }
+
+        .barrier-card {
+            width: 100%;
+            max-width: 480px;
+            background: #14050a;
+            border: 2px solid var(--neon-cyan);
+            border-radius: 8px;
+            box-shadow: 0 0 45px rgba(255, 42, 85, 0.4);
+            padding: 26px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: relative;
+        }
+
+        .barrier-card::before {
+            content: '';
+            position: absolute;
+            top: -2px; left: -2px; right: -2px; height: 4px;
+            background: linear-gradient(90deg, var(--neon-cyan), #ff0055, var(--neon-cyan));
+            border-radius: 8px 8px 0 0;
+        }
+
+        .barrier-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .barrier-badge {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--neon-amber);
+            border: 1px solid rgba(255, 183, 0, 0.4);
+            padding: 2px 8px;
+            border-radius: 3px;
+            background: rgba(255, 183, 0, 0.1);
+        }
+
+        .barrier-title {
+            font-family: var(--font-head);
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: 2px;
+        }
+
+        .barrier-desc {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            background: rgba(255, 42, 85, 0.05);
+            border: 1px dashed var(--border-cyan);
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+
+        .auth-form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .auth-label {
+            font-family: var(--font-mono);
+            font-size: 0.74rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .auth-input {
+            background: rgba(10, 3, 5, 0.95);
+            border: 1px solid var(--border-cyan);
+            border-radius: 4px;
+            padding: 10px 12px;
+            color: #fff;
+            font-family: var(--font-mono);
+            font-size: 0.92rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .auth-input:focus {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 12px var(--cyan-glow);
+        }
+
+        .quick-chips-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .quick-chip {
+            background: rgba(255, 42, 85, 0.1);
+            border: 1px solid rgba(255, 42, 85, 0.3);
+            color: var(--neon-cyan);
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-chip:hover {
+            background: var(--neon-cyan);
+            color: #ffffff;
+        }
+
+        .auth-error-msg {
+            color: var(--neon-red);
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            min-height: 18px;
+        }
+
+        @media (max-width: 1100px) {
+            .dt-workspace-grid {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            .automation-grid, .vision-grid, .pdm-grid {
+                grid-template-columns: 1fr;
+            }
+            .main-stage {
+                height: auto;
+                overflow-y: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+
+    <!-- =========================================================================
+         1. STARTUP SPLASH SCREEN
+         ========================================================================= -->
+    <div id="splash-screen">
+        <div class="splash-inner">
+            <div class="splash-badge">Autonomous IIoT Ecosystem & Multi-Vehicle Twin</div>
+            <h1 class="splash-title">TWIN DRIVE</h1>
+            <div class="splash-credits">Developed by HARINI | IYLAMARAN | MUTHUKUMAR | HARIHARAN | ISMAIL</div>
+            <p class="splash-desc">
+                Mission-critical Industrial IoT orchestrator integrating event-driven factory automation, 
+                high-precision machine vision defect inspection, multi-vehicle behavioral digital twin simulations, 
+                and machine learning prognostics.
+            </p>
+            <button class="splash-btn" id="btn-enter-system">
+                <span>ENTER SYSTEM CONSOLE</span>
+                <i data-lucide="arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         2. PERSISTENT APPLICATION HEADER
+         ========================================================================= -->
+    <header>
+        <div class="header-brand">
+            <div class="brand-logo-hex">
+                <i data-lucide="cpu"></i>
+            </div>
+            <div class="brand-name-h1">TWIN <span>DRIVE</span></div>
+        </div>
+
+        <div class="module-nav-bar">
+            <button class="mod-nav-btn active" data-mod="mod-dt">
+                <i data-lucide="globe"></i> Digital Twin
+                <i data-lucide="lock" class="lock-icon" id="lock-dt"></i>
+            </button>
+            <button class="mod-nav-btn" data-mod="mod-auto">
+                <i data-lucide="git-merge"></i> Factory Automation
+                <i data-lucide="lock" class="lock-icon" id="lock-auto"></i>
+            </button>
+            <button class="mod-nav-btn" data-mod="mod-vision">
+                <i data-lucide="eye"></i> Machine Vision
+                <i data-lucide="lock" class="lock-icon" id="lock-vision"></i>
+            </button>
+            <button class="mod-nav-btn" data-mod="mod-pdm">
+                <i data-lucide="activity"></i> Predictive Maintenance
+                <i data-lucide="lock" class="lock-icon" id="lock-pdm"></i>
+            </button>
+        </div>
+
+        <div class="header-auth-badge">
+            <div class="user-pill" id="current-user-pill">
+                <i data-lucide="shield-alert"></i> <span id="current-user-name">UNAUTHENTICATED</span>
+            </div>
+            <button class="btn-auth-action" id="btn-header-auth">CHANGE DEVELOPER</button>
+        </div>
+    </header>
+
+    <!-- =========================================================================
+         3. DYNAMIC OPENING SEQUENCE BANNER
+         ========================================================================= -->
+    <div class="module-opening-banner" id="module-opening-banner">
+        <div class="mob-title-group">
+            <span class="mob-main-title">TWIN DRIVE</span>
+            <span class="mob-divider">//</span>
+            <span class="mob-sub-title" id="mob-sub-title">Digital Twin</span>
+            <span class="mob-dev-tag" id="mob-dev-tag">Developer: <span>ISMAIL</span></span>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:8px; font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted);">
+            <span>INDUSTRY CONFIG:</span>
+            <select class="cyber-select" id="industry-config-select">
+                <option value="plane">Option D: EV Plane Aerospace Facility & Fleet</option>
+                <option value="motor">Option A: EV Motor Factory & Fleet</option>
+                <option value="car">Option B: EV Car Plant & Fleet</option>
+                <option value="drone">Option C: EV Drone Facility & Fleet</option>
+                <option value="train">Option E: High-Speed Maglev Depot & Guideway</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         4. MAIN CONTENT STAGE (NO GAPS - CLEAN FIXED/FLEX LAYOUT)
+         ========================================================================= -->
+    <div class="main-stage">
+
+        <!-- =====================================================================
+             MODULE 3: AETHER DIGITAL TWIN (Ismail)
+             ===================================================================== -->
+        <div class="module-view active" id="view-mod-dt">
+            
+            <!-- Top Vehicle Selector & Validation Badge -->
+            <div class="dt-top-selector-bar">
+                <div class="dt-vehicle-tabs" id="dt-vehicle-tabs">
+                    <button class="dt-v-tab active" data-type="airplane"><i data-lucide="plane"></i> EV Airplane</button>
+                    <button class="dt-v-tab" data-type="drone"><i data-lucide="bot"></i> EV Drone</button>
+                    <button class="dt-v-tab" data-type="car"><i data-lucide="car"></i> EV Car</button>
+                    <button class="dt-v-tab" data-type="bike"><i data-lucide="bike"></i> EV Bike</button>
+                    <button class="dt-v-tab" data-type="bus"><i data-lucide="bus"></i> EV Bus</button>
+                    <button class="dt-v-tab" data-type="train"><i data-lucide="train"></i> High-Speed Maglev</button>
+                </div>
+
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted);">VALIDATION:</span>
+                    <div class="badge-pass" id="global-validation-badge">
+                        <i data-lucide="shield-check"></i> MODEL SUCCESSFUL [PASS]
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3-Column Zero-Gap Grid -->
+            <div class="dt-workspace-grid">
+                
+                <!-- Left Panel: Isolated Subsystems -->
+                <div class="cyber-panel">
+                    <div class="panel-head">
+                        <span class="panel-head-title"><i data-lucide="layers"></i> Isolated Subsystems</span>
+                        <span style="font-family:var(--font-mono); font-size:0.7rem; color:var(--neon-cyan);" id="vehicle-type-label">EV AIRPLANE</span>
+                    </div>
+                    <div class="panel-body-content" style="display:flex; flex-direction:column; gap:8px;">
+                        <div class="component-list" id="dt-component-list"></div>
+
+                        <div style="margin-top:auto; background:var(--bg-card); border:1px dashed var(--border-cyan); border-radius:4px; padding:8px;">
+                            <div style="font-family:var(--font-head); font-size:0.74rem; color:var(--neon-cyan); margin-bottom:4px; display:flex; align-items:center; gap:5px;">
+                                <i data-lucide="inspect" style="width:12px; height:12px;"></i> ISOLATION TELEMETRY
+                            </div>
+                            <div class="detail-row"><span class="detail-label">Isolated Target:</span><span class="detail-val" id="iso-target">Composite Aircraft Airframe</span></div>
+                            <div class="detail-row"><span class="detail-label">Structural Mass:</span><span class="detail-val" id="iso-mass">850 kg</span></div>
+                            <div class="detail-row"><span class="detail-label">Center of Gravity:</span><span class="detail-val" id="iso-cg">320 mm</span></div>
+                            <div class="detail-row"><span class="detail-label">Health Status:</span><span class="detail-val" id="iso-health" style="color:var(--neon-green);">NORMAL</span></div>
+                            <div class="detail-row"><span class="detail-label">Telemetry:</span><span class="detail-val" id="iso-telemetry">100% Deterministic</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Center Viewport: 3D Holographic CAD View -->
+                <div class="cyber-panel dt-viewport-panel">
+                    <div class="scanline"></div>
+                    <div id="three-canvas-container"></div>
+
+                    <div class="dt-hud-overlay">
+                        <div style="display:flex; justify-content:space-between; width:100%;">
+                            <div class="dt-hud-box">
+                                <div class="dt-hud-title">AETHER 3D CAD ENGINE</div>
+                                <div class="dt-hud-val" id="hud-model-name" style="font-size:0.95rem; color:#00f3ff; text-shadow:0 0 10px rgba(0,243,255,0.6);">EV AERO-LIGHT AIRCRAFT v1.8</div>
+                            </div>
+                            <div class="dt-hud-box">
+                                <div class="dt-hud-title">SIMULATED VELOCITY</div>
+                                <div class="dt-hud-val"><span id="hud-speed-val">120</span> <span style="font-size:0.75rem; color:#38bdf8;" id="hud-speed-unit">KM/H</span></div>
+                            </div>
+                        </div>
+
+                        <div style="align-self:center; background:rgba(2,12,26,0.92); border:1px solid rgba(0,243,255,0.45); border-radius:20px; padding:4px 16px; font-family:var(--font-mono); font-size:0.72rem; color:#00f3ff; box-shadow:0 0 15px rgba(0,243,255,0.25); letter-spacing:0.05em;">
+                            LEFT CLICK: ROTATE | RIGHT CLICK: PAN | SCROLL: ZOOM
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Telemetry Controls & Sliders -->
+                <div class="cyber-panel">
+                    <div class="telemetry-tabs">
+                        <button class="tab-btn active" data-tab="physics">Physics</button>
+                        <button class="tab-btn" data-tab="safety">Safety</button>
+                        <button class="tab-btn" data-tab="environment">Environment</button>
+                        <button class="tab-btn" data-tab="battery">Battery</button>
+                    </div>
+
+                    <div class="panel-body-content">
+                        <!-- Physics Tab -->
+                        <div class="tab-pane active" id="tab-physics">
+                            <div class="slider-group">
+                                <div class="slider-header">
+                                    <span>Gravity & Impact Force</span>
+                                    <span class="slider-val"><span id="val-gravity">1.0</span> g</span>
+                                </div>
+                                <input type="range" id="input-gravity" min="0.5" max="4.0" step="0.1" value="1.0">
+                                <span style="font-size:0.66rem; color:var(--text-muted);">Safe threshold: &le; 2.8g</span>
+                            </div>
+
+                            <div class="slider-group">
+                                <div class="slider-header">
+                                    <span id="lbl-pitch-roll">Flight Pitch / Roll Angle</span>
+                                    <span class="slider-val"><span id="val-pitch-roll">5</span>&deg;</span>
+                                </div>
+                                <input type="range" id="input-pitch-roll" min="-25" max="45" step="1" value="5">
+                                <div class="detail-row" style="margin-top:2px;"><span class="detail-label">Stall Safety Margin:</span><span class="detail-val" id="val-stall-margin">2.10 (STABLE)</span></div>
+                            </div>
+
+                            <div class="slider-group">
+                                <div class="slider-header">
+                                    <span>Control System Latency</span>
+                                    <span class="slider-val"><span id="val-latency">12</span> ms</span>
+                                </div>
+                                <input type="range" id="input-latency" min="5" max="100" step="1" value="12">
+                                <span style="font-size:0.66rem; color:var(--text-muted);">Max permissible: &lt; 35 ms</span>
+                            </div>
+                        </div>
+
+                        <!-- Safety Tab -->
+                        <div class="tab-pane" id="tab-safety">
+                            <div class="slider-group">
+                                <div class="slider-header">
+                                    <span>Safety Deployment Speed</span>
+                                    <span class="slider-val"><span id="val-safety-vel">35</span> km/h</span>
+                                </div>
+                                <input type="range" id="input-safety-vel" min="10" max="150" step="5" value="35">
+                                <div class="detail-row"><span class="detail-label">Parachute/Airbag Inflator:</span><span class="detail-val" style="color:var(--neon-green);">ARMED</span></div>
+                            </div>
+                            <button class="cyber-btn danger" id="btn-deploy-emergency" style="width:100%; margin-top:4px;">
+                                <i data-lucide="alert-octagon"></i> TEST BALLISTIC DEPLOYMENT
+                            </button>
+                        </div>
+
+                        <!-- Environment Tab -->
+                        <div class="tab-pane" id="tab-environment">
+                            <div class="slider-group">
+                                <div class="slider-header">
+                                    <span id="lbl-env-param">Wind Shear / Gust Velocity</span>
+                                    <span class="slider-val"><span id="val-env-param">25</span> km/h</span>
+                                </div>
+                                <input type="range" id="input-env-param" min="0" max="100" step="5" value="25">
+                                <div class="detail-row"><span class="detail-label">Airframe Turbulence Load:</span><span class="detail-val" id="val-turb-load">24%</span></div>
+                            </div>
+                        </div>
+
+                        <!-- Battery Tab -->
+                        <div class="tab-pane" id="tab-battery">
+                            <div class="slider-group">
+                                <div class="slider-header">
+                                    <span>State of Charge (SoC)</span>
+                                    <span class="slider-val"><span id="val-soc">78</span>%</span>
+                                </div>
+                                <input type="range" id="input-soc" min="1" max="100" step="1" value="78">
+                            </div>
+
+                            <div class="slider-group">
+                                <div class="slider-header">
+                                    <span>Ambient Temperature</span>
+                                    <span class="slider-val"><span id="val-temp">22</span>&deg;C</span>
+                                </div>
+                                <input type="range" id="input-temp" min="-20" max="55" step="1" value="22">
+                            </div>
+
+                            <div class="slider-group">
+                                <div class="slider-header">
+                                    <span>Simulated Travel Speed</span>
+                                    <span class="slider-val"><span id="val-speed">120</span> km/h</span>
+                                </div>
+                                <input type="range" id="input-speed" min="0" max="280" step="5" value="120">
+                            </div>
+
+                            <div style="background:var(--bg-card); border:1px dashed var(--border-cyan); border-radius:4px; padding:6px; margin-top:4px;">
+                                <div class="detail-row"><span class="detail-label">Energy Remaining:</span><span class="detail-val" id="calc-kwh">93.6 kWh</span></div>
+                                <div class="detail-row"><span class="detail-label">Operational Range:</span><span class="detail-val" id="calc-range">185 mins</span></div>
+                                <div class="detail-row"><span class="detail-label">Cell Thermal Balance:</span><span class="detail-val" style="color:var(--neon-green);">OPTIMAL (29&deg;C)</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- =====================================================================
+             MODULE 1: FACTORY AUTOMATION (Iylamaran)
+             ===================================================================== -->
+        <div class="module-view" id="view-mod-auto">
+            <div class="automation-grid">
+                <div class="cyber-panel">
+                    <div class="panel-head">
+                        <span class="panel-head-title"><i data-lucide="git-merge"></i> 4-Step Production Sequence Orchestrator</span>
+                        <span class="badge-pass" id="auto-state-badge">STATE: IDLE</span>
+                    </div>
+                    <div class="panel-body-content">
+                        <div class="workflow-stepper">
+                            <div class="step-node active" id="step-node-1">
+                                <div class="step-num">STEP 01</div>
+                                <div class="step-name" id="step-name-1">Jig Alignment & Infeed</div>
+                                <div class="step-status" id="step-status-1">STANDBY</div>
+                            </div>
+                            <div class="step-node" id="step-node-2">
+                                <div class="step-num">STEP 02</div>
+                                <div class="step-name" id="step-name-2">Automated Riveting</div>
+                                <div class="step-status" id="step-status-2">WAITING</div>
+                            </div>
+                            <div class="step-node" id="step-node-3">
+                                <div class="step-num">STEP 03</div>
+                                <div class="step-name" id="step-name-3">Vision NDT Scan Gate</div>
+                                <div class="step-status" id="step-status-3">WAITING (TRIGGERS MOD 2)</div>
+                            </div>
+                            <div class="step-node" id="step-node-4">
+                                <div class="step-num">STEP 04</div>
+                                <div class="step-name" id="step-name-4">Avionics Loom Sync</div>
+                                <div class="step-status" id="step-status-4">WAITING</div>
+                            </div>
+                        </div>
+
+                        <div class="workflow-canvas-box" id="auto-schematic">
+                            <div style="text-align:center;">
+                                <i data-lucide="cog" style="width:44px; height:44px; color:var(--neon-cyan); animation: spin 8s linear infinite;"></i>
+                                <div style="font-family:var(--font-head); margin-top:8px; color:#fff;" id="schematic-action-text">PRODUCTION LINE READY</div>
+                                <div style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted);" id="schematic-sub-text">Awaiting operator sequence trigger</div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap:10px; margin-top:14px;">
+                            <button class="cyber-btn" id="btn-start-auto"><i data-lucide="play"></i> START AUTOMATED SEQUENCE</button>
+                            <button class="cyber-btn" id="btn-pause-auto" style="background:rgba(255,183,0,0.2); border-color:var(--neon-amber); color:var(--neon-amber);"><i data-lucide="pause"></i> PAUSE</button>
+                            <button class="cyber-btn danger" id="btn-reset-auto"><i data-lucide="rotate-ccw"></i> RESET</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cyber-panel">
+                    <div class="panel-head">
+                        <span class="panel-head-title"><i data-lucide="terminal"></i> Event Stream Log</span>
+                        <span style="font-family:var(--font-mono); font-size:0.7rem; color:var(--neon-cyan);">LIVE</span>
+                    </div>
+                    <div class="panel-body-content" id="auto-event-log" style="font-family:var(--font-mono); font-size:0.75rem; display:flex; flex-direction:column; gap:6px;">
+                        <div style="color:var(--neon-cyan);">[SYSTEM] Automation state machine initialized.</div>
+                        <div style="color:var(--text-muted);">[AUTH] Developer IYLAMARAN authenticated.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- =====================================================================
+             MODULE 2: MACHINE VISION QUALITY CONTROL (Muthukumar)
+             ===================================================================== -->
+        <div class="module-view" id="view-mod-vision">
+            <div class="vision-grid">
+                <div class="cyber-panel">
+                    <div class="panel-head">
+                        <span class="panel-head-title"><i data-lucide="scan"></i> AI Computer Vision Quality Control Stream</span>
+                        <div class="badge-pass" id="vision-qc-badge"><i data-lucide="check-circle"></i> QC PASS</div>
+                    </div>
+                    <div class="panel-body-content">
+                        <div class="vision-feed-container">
+                            <canvas id="vision-canvas"></canvas>
+                            <div class="vision-reticle" id="vision-reticle">
+                                <div>YOLOv8 NDT INFERENCE ENGINE: ACTIVE</div>
+                                <div>RESOLUTION: 1920x1080 @ 60 FPS</div>
+                                <div id="vision-target-text">TARGET: Aluminum Skin Rivets & Weave</div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
+                            <div style="display:flex; gap:10px;">
+                                <button class="cyber-btn" id="btn-run-vision-scan"><i data-lucide="play"></i> TRIGGER NDT SCAN</button>
+                                <button class="cyber-btn" id="btn-toggle-defect" style="border-color:var(--neon-amber); color:var(--neon-amber);">
+                                    <i data-lucide="alert-triangle"></i> INJECT DEFECT SAMPLE
+                                </button>
+                            </div>
+                            <div style="font-family:var(--font-mono); font-size:0.8rem;">
+                                CONFIDENCE: <span style="color:var(--neon-cyan); font-weight:bold;" id="vision-confidence">99.4%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cyber-panel">
+                    <div class="panel-head">
+                        <span class="panel-head-title"><i data-lucide="clipboard-check"></i> Defect Analysis</span>
+                    </div>
+                    <div class="panel-body-content" style="display:flex; flex-direction:column; gap:10px;">
+                        <div class="detail-row"><span class="detail-label">Model Architecture:</span><span class="detail-val">YOLOv8-Seg Custom</span></div>
+                        <div class="detail-row"><span class="detail-label" id="vision-inspect-label">Total Rivets Inspected:</span><span class="detail-val" id="vision-inspect-count">240 Units</span></div>
+                        <div class="detail-row"><span class="detail-label">Tolerance Threshold:</span><span class="detail-val">&plusmn; 0.05 mm</span></div>
+                        <div class="detail-row"><span class="detail-label">Defects Detected:</span><span class="detail-val" id="vision-defect-count" style="color:var(--neon-green);">0 DEFECTS</span></div>
+
+                        <div style="background:var(--bg-card); border:1px solid var(--border-cyan); border-radius:5px; padding:10px; margin-top:8px;">
+                            <div style="font-family:var(--font-head); font-size:0.75rem; color:var(--neon-cyan); margin-bottom:4px;">GATEWAY VERIFICATION</div>
+                            <div style="font-size:0.78rem; color:var(--text-muted);" id="vision-gate-desc">
+                                All aluminum rivet heads meet aerodynamic shear parameters and depth tolerances.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- =====================================================================
+             MODULE 4: PREDICTIVE MAINTENANCE (Hariharan)
+             ===================================================================== -->
+        <div class="module-view" id="view-mod-pdm">
+            <div class="pdm-grid">
+                <div class="cyber-panel">
+                    <div class="panel-head">
+                        <span class="panel-head-title"><i data-lucide="cpu"></i> XGBoost Binary Classifier Prognostics</span>
+                        <div class="badge-pass" id="pdm-health-badge">HEALTH: NORMAL</div>
+                    </div>
+                    <div class="panel-body-content" style="display:flex; flex-direction:column; gap:12px;">
+                        <div class="rul-kpi-card">
+                            <div>
+                                <div style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted); text-transform:uppercase;">REMAINING USEFUL LIFE (RUL)</div>
+                                <div class="rul-kpi-val" id="pdm-rul-hours">2,840</div>
+                                <div style="font-family:var(--font-sub); font-size:0.85rem; color:var(--neon-cyan);" id="pdm-rul-unit">FLIGHT HOURS REMAINING</div>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-family:var(--font-mono); font-size:0.72rem; color:var(--text-muted);">FAILURE RISK PROBABILITY</div>
+                                <div style="font-family:var(--font-head); font-size:1.6rem; color:var(--neon-green);" id="pdm-risk-pct">2.1%</div>
+                                <div style="font-family:var(--font-mono); font-size:0.72rem; color:var(--neon-green);" id="pdm-class-text">CLASS: 0 (HEALTHY)</div>
+                            </div>
+                        </div>
+
+                        <div class="chart-box">
+                            <div style="font-family:var(--font-mono); font-size:0.7rem; color:var(--neon-cyan); margin-bottom:4px;">TRIAXIAL VIBRATION & POWER INVERTER HARMONICS</div>
+                            <canvas id="pdm-chart" style="width:100%; height:140px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cyber-panel">
+                    <div class="panel-head">
+                        <span class="panel-head-title"><i data-lucide="shield-alert"></i> Subsystem Prognostics</span>
+                    </div>
+                    <div class="panel-body-content" id="pdm-prognostic-cards" style="display:flex; flex-direction:column; gap:10px;">
+                        <div style="background:var(--bg-card); border:1px solid var(--border-cyan); border-radius:5px; padding:10px;">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                                <span style="font-weight:600; font-size:0.84rem;">Electric Propeller Drive Motors</span>
+                                <span style="font-family:var(--font-mono); font-size:0.74rem; color:var(--neon-green);">HEALTHY</span>
+                            </div>
+                            <div style="font-size:0.74rem; color:var(--text-muted);">Bearing micro-wear index: 0.12 (Threshold: 0.85)</div>
+                        </div>
+
+                        <div style="background:var(--bg-card); border:1px solid var(--border-cyan); border-radius:5px; padding:10px;">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                                <span style="font-weight:600; font-size:0.84rem;">120kWh Wing Battery Bay</span>
+                                <span style="font-family:var(--font-mono); font-size:0.74rem; color:var(--neon-green);">HEALTHY</span>
+                            </div>
+                            <div style="font-size:0.74rem; color:var(--text-muted);">Thermal runaway risk: 0.04% | SoH: 98.6%</div>
+                        </div>
+
+                        <div style="background:var(--bg-card); border:1px solid var(--border-cyan); border-radius:5px; padding:10px;">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                                <span style="font-weight:600; font-size:0.84rem;">Flight Actuator Servos</span>
+                                <span style="font-family:var(--font-mono); font-size:0.74rem; color:var(--neon-green);">HEALTHY</span>
+                            </div>
+                            <div style="font-size:0.74rem; color:var(--text-muted);">Zero-tolerance jam margin: 99.8% Nominal</div>
+                        </div>
+
+                        <button class="cyber-btn" id="btn-simulate-failure-risk" style="margin-top:auto; border-color:var(--neon-amber); color:var(--neon-amber);">
+                            <i data-lucide="zap-off"></i> SIMULATE CRITICAL WEAR INGESTION
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- =========================================================================
+         5. MANDATORY SECURITY ACCESS BARRIER (BLOCKING INTERRUPT OVERLAY)
+         ========================================================================= -->
+    <div id="auth-interrupt-barrier" class="active">
+        <div class="barrier-card">
+            <div class="barrier-header">
+                <i data-lucide="shield-alert" style="width:26px; height:26px; color:var(--neon-cyan);"></i>
+                <div>
+                    <div class="barrier-badge">SECURITY ACCESS CONTROL LIST (ACL)</div>
+                    <div class="barrier-title" id="barrier-module-name">MODULE ENCRYPTION INTERRUPT</div>
+                </div>
+            </div>
+
+            <div class="barrier-desc" id="barrier-target-desc">
+                This module is cryptographically locked. Explicit developer authentication is required before running, ingesting payloads, or streaming telemetry.
+            </div>
+
+            <div class="auth-form-group">
+                <label class="auth-label">Developer Username</label>
+                <input type="text" class="auth-input" id="barrier-username" placeholder="ENTER ASSIGNED USERNAME">
+            </div>
+
+            <div class="auth-form-group">
+                <label class="auth-label">Developer Access Token / Password</label>
+                <input type="password" class="auth-input" id="barrier-password" placeholder="ENTER ACCESS CREDENTIALS">
+            </div>
+
+            <div>
+                <span style="font-family:var(--font-mono); font-size:0.68rem; color:var(--text-muted);">QUICK AUTHENTICATION CHIPS:</span>
+                <div class="quick-chips-box">
+                    <button class="quick-chip" data-user="ISMAIL" data-pass="9924005256">Ismail (Digital Twin)</button>
+                    <button class="quick-chip" data-user="IYLAMARAN" data-pass="9924005258">Iylamaran (Automation)</button>
+                    <button class="quick-chip" data-user="MUTHUKUMAR" data-pass="99240040286">Muthukumar (Vision)</button>
+                    <button class="quick-chip" data-user="HARIHARAN" data-pass="9924020031">Hariharan (Pred. Maint)</button>
+                </div>
+            </div>
+
+            <div class="auth-error-msg" id="barrier-error-msg"></div>
+
+            <button class="cyber-btn" id="btn-verify-clear-barrier" style="width:100%; padding:11px; font-size:0.88rem;">
+                <i data-lucide="unlock"></i> VERIFY & CLEAR SECURITY INTERRUPT
+            </button>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         6. APPLICATION SCRIPT LOGIC
+         ========================================================================= -->
+    <script>
+        lucide.createIcons();
+
+        /* CREDENTIALS ACCESS CONTROL LIST */
+        const DEVELOPER_CREDENTIALS = {
+            'IYLAMARAN': { pass: '9924005258', role: 'Factory Automation', module: 'mod-auto' },
+            'MUTHUKUMAR': { pass: '99240040286', role: 'Machine Vision', module: 'mod-vision' },
+            'ISMAIL': { pass: '9924005256', role: 'Digital Twin', module: 'mod-dt' },
+            'HARIHARAN': { pass: '9924020031', role: 'Predictive Maintenance', module: 'mod-pdm' }
+        };
+
+        const MODULE_CONFIG = {
+            'mod-auto': { title: 'Factory Automation', dev: 'IYLAMARAN', icon: 'git-merge' },
+            'mod-vision': { title: 'Machine Vision', dev: 'MUTHUKUMAR', icon: 'eye' },
+            'mod-dt': { title: 'Digital Twin', dev: 'ISMAIL', icon: 'globe' },
+            'mod-pdm': { title: 'Predictive Maintenance', dev: 'HARIHARAN', icon: 'activity' }
+        };
+
+        let currentSessionUser = null;
+        let authenticatedModules = new Set();
+        let targetModulePendingAuth = 'mod-dt'; // Default target on start
+
+        /* SPLASH SCREEN LOGIC */
+        const splashScreen = document.getElementById('splash-screen');
+        document.getElementById('btn-enter-system').addEventListener('click', () => {
+            splashScreen.style.opacity = '0';
+            setTimeout(() => { 
+                splashScreen.style.visibility = 'hidden';
+                // Trigger mandatory security interrupt for initial module!
+                triggerSecurityInterrupt('mod-dt');
+            }, 600);
+        });
+
+        /* =========================================================================
+           MANDATORY SECURITY INTERRUPT CONTROLLER
+           ========================================================================= */
+        const barrierOverlay = document.getElementById('auth-interrupt-barrier');
+        const barrierUsernameInput = document.getElementById('barrier-username');
+        const barrierPasswordInput = document.getElementById('barrier-password');
+        const barrierErrorMsg = document.getElementById('barrier-error-msg');
+
+        function triggerSecurityInterrupt(modId) {
+            targetModulePendingAuth = modId;
+            const modInfo = MODULE_CONFIG[modId];
+
+            document.getElementById('barrier-module-name').innerText = `SECURITY INTERRUPT: ${modInfo.title.toUpperCase()}`;
+            document.getElementById('barrier-target-desc').innerHTML = `Access to <strong>${modInfo.title}</strong> is locked.<br>Mandatory Developer: <strong>${modInfo.dev}</strong>. Submit credentials to clear interrupt.`;
+            
+            barrierUsernameInput.value = modInfo.dev;
+            barrierPasswordInput.value = '';
+            barrierErrorMsg.innerText = '';
+            
+            barrierOverlay.classList.add('active');
+            barrierPasswordInput.focus();
+        }
+
+        // Quick Auth Chips
+        document.querySelectorAll('.quick-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                barrierUsernameInput.value = chip.getAttribute('data-user');
+                barrierPasswordInput.value = chip.getAttribute('data-pass');
+                barrierErrorMsg.innerText = '';
+            });
+        });
+
+        document.getElementById('btn-verify-clear-barrier').addEventListener('click', verifyAndClearInterrupt);
+        barrierPasswordInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') verifyAndClearInterrupt();
+        });
+
+        function verifyAndClearInterrupt() {
+            const user = barrierUsernameInput.value.trim().toUpperCase();
+            const pass = barrierPasswordInput.value.trim();
+
+            if (!DEVELOPER_CREDENTIALS[user]) {
+                barrierErrorMsg.innerText = 'ACCESS DENIED: Unknown developer profile.';
+                return;
+            }
+
+            if (DEVELOPER_CREDENTIALS[user].pass !== pass) {
+                barrierErrorMsg.innerText = 'ACCESS DENIED: Invalid password token for ' + user + '.';
+                return;
+            }
+
+            // Check if user has permission for the requested module
+            const allowedModule = DEVELOPER_CREDENTIALS[user].module;
+            if (allowedModule !== targetModulePendingAuth) {
+                barrierErrorMsg.innerText = `UNAUTHORIZED: Developer ${user} only has clearance for ${DEVELOPER_CREDENTIALS[user].role}.`;
+                return;
+            }
+
+            // Authentication Successful: CLEAR INTERRUPT
+            currentSessionUser = user;
+            authenticatedModules.add(targetModulePendingAuth);
+
+            // Update Header User Pill
+            document.getElementById('current-user-name').innerText = currentSessionUser;
+            document.getElementById('current-user-pill').style.color = 'var(--neon-green)';
+            document.getElementById('current-user-pill').style.borderColor = 'rgba(0, 255, 136, 0.4)';
+            document.getElementById('current-user-pill').style.background = 'rgba(0, 255, 136, 0.08)';
+
+            // Hide Lock Icon for this module
+            if (targetModulePendingAuth === 'mod-dt') document.getElementById('lock-dt').style.display = 'none';
+            if (targetModulePendingAuth === 'mod-auto') document.getElementById('lock-auto').style.display = 'none';
+            if (targetModulePendingAuth === 'mod-vision') document.getElementById('lock-vision').style.display = 'none';
+            if (targetModulePendingAuth === 'mod-pdm') document.getElementById('lock-pdm').style.display = 'none';
+
+            // Close Interrupt Barrier
+            barrierOverlay.classList.remove('active');
+
+            // Open the module with opening formula sequence
+            displayUnlockedModule(targetModulePendingAuth);
+        }
+
+        // Header Change Developer Button
+        document.getElementById('btn-header-auth').addEventListener('click', () => {
+            const activeBtn = document.querySelector('.mod-nav-btn.active');
+            const modId = activeBtn ? activeBtn.getAttribute('data-mod') : 'mod-dt';
+            triggerSecurityInterrupt(modId);
+        });
+
+        /* =========================================================================
+           MODULE NAVIGATION & OPENING SEQUENCE
+           ========================================================================= */
+        function setupModuleNavigation() {
+            document.querySelectorAll('.mod-nav-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const modId = btn.getAttribute('data-mod');
+
+                    // If not authenticated for this module, interrupt!
+                    if (!authenticatedModules.has(modId)) {
+                        triggerSecurityInterrupt(modId);
+                        return;
+                    }
+
+                    displayUnlockedModule(modId);
+                });
+            });
+        }
+
+        function displayUnlockedModule(modId) {
+            const modInfo = MODULE_CONFIG[modId];
+
+            // Update Nav Tabs
+            document.querySelectorAll('.mod-nav-btn').forEach(b => b.classList.remove('active'));
+            const activeBtn = document.querySelector(`.mod-nav-btn[data-mod="${modId}"]`);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            // Set Title Formula:
+            // "TWIN DRIVE" // "<Module Name>"
+            document.getElementById('mob-sub-title').innerText = modInfo.title;
+            document.getElementById('mob-dev-tag').innerHTML = `Developer: <span>${modInfo.dev}</span>`;
+
+            // Switch Active View
+            document.querySelectorAll('.module-view').forEach(v => v.classList.remove('active'));
+            const targetView = document.getElementById(`view-${modId}`);
+            if (targetView) targetView.classList.add('active');
+
+            // Trigger canvas/3D resizes
+            if (modId === 'mod-dt') {
+                setTimeout(onWindowResize, 50);
+            } else if (modId === 'mod-vision') {
+                setTimeout(renderVisionCanvas, 50);
+            } else if (modId === 'mod-pdm') {
+                setTimeout(renderPdmChart, 50);
+            }
+        }
+
+        /* =========================================================================
+           THREE.JS AETHER DIGITAL TWIN ENGINE (Ismail)
+           ========================================================================= */
+        let scene, camera, renderer, controls, vehicleGroup;
+        let currentVehicleType = 'airplane';
+
+        let animatedSpinners = [];
+        let currentIndustryConfigId = 'plane';
+
+        const INDUSTRY_CONFIGS = {
+            plane: {
+                id: 'plane',
+                vehicleType: 'airplane',
+                name: 'Option D: EV Plane Aerospace Facility & Fleet',
+                autoSteps: [
+                    { num: 'STEP 01', name: 'Jig Alignment & Infeed', desc: 'Hydraulic jig locating titanium wing root ribs' },
+                    { num: 'STEP 02', name: 'Automated Riveting', desc: 'Multi-axis robotic arm driving aerospace rivets' },
+                    { num: 'STEP 03', name: 'Vision NDT Scan Gate', desc: 'Laser ultrasonic & optical defect scan' },
+                    { num: 'STEP 04', name: 'Avionics Loom Sync', desc: 'MIL-STD-1553 bus harness latching' }
+                ],
+                vision: {
+                    target: 'Aluminum Skin Rivets & Composite Weave',
+                    specimenType: 'rivets',
+                    inspectLabel: 'Fasteners Inspected:',
+                    inspectCount: '240 Units',
+                    cleanDesc: 'All aluminum rivet heads meet aerodynamic shear parameters and depth tolerances.',
+                    defectDesc: 'Defect: Surface pitting & cracked fastener head detected at Joint #03. Gate rejected.'
+                },
+                pdm: {
+                    focus: 'Zero-Tolerance Aerospace Jamming & Inverter Diagnostics',
+                    rulNominal: '2,840',
+                    rulUnit: 'FLIGHT HOURS REMAINING',
+                    subsystems: [
+                        { name: 'Dual-Redundant Stators', status: 'HEALTHY', metric: 'Bearing micro-wear index: 0.12 (Threshold: 0.85)' },
+                        { name: 'Power Distribution Unit (PDU)', status: 'HEALTHY', metric: 'Thermal runaway risk: 0.04% | SoH: 98.6%' },
+                        { name: 'Flight Actuator Servos', status: 'HEALTHY', metric: 'Zero-tolerance jam margin: 99.8% Nominal' }
+                    ]
+                }
+            },
+            motor: {
+                id: 'motor',
+                vehicleType: 'bike',
+                name: 'Option A: EV Motor Factory & Fleet',
+                autoSteps: [
+                    { num: 'STEP 01', name: 'Infeed (Hairpins Loaded)', desc: 'Automated feeder inserting oxygen-free copper hairpins' },
+                    { num: 'STEP 02', name: 'Laser Welding', desc: 'Fiber laser welding hairpin crown junctions' },
+                    { num: 'STEP 03', name: 'Vision Inspection Gate', desc: 'Macro camera optical inspection of weld crowns' },
+                    { num: 'STEP 04', name: 'Trickle Varnishing', desc: 'Epoxy resin drip coating & induction curing' }
+                ],
+                vision: {
+                    target: 'Copper Stator Hairpin Welds & Magnets',
+                    specimenType: 'hairpins',
+                    inspectLabel: 'Hairpins Inspected:',
+                    inspectCount: '192 Joint Pairs',
+                    cleanDesc: 'Copper hairpin welds show optimal metallurgical pool and zero porosity.',
+                    defectDesc: 'Defect: Unfused / burned weld and micro-fractured NdFeB magnet detected at Joint #03.'
+                },
+                pdm: {
+                    focus: 'Bearing Degradation & Stator Insulation Breakdown Prognostics',
+                    rulNominal: '8,450',
+                    rulUnit: 'OPERATING HOURS REMAINING',
+                    subsystems: [
+                        { name: 'Ceramic Bearing Assembly', status: 'HEALTHY', metric: 'Acoustic emission RMS: 0.18 (Limit: 1.2)' },
+                        { name: 'Stator Winding Insulation', status: 'HEALTHY', metric: 'Dielectric resistance > 100 GΩ (Nominal)' },
+                        { name: 'Power Inverter Stage', status: 'HEALTHY', metric: 'Phase ripple THD: 1.2% @ 16 kHz' }
+                    ]
+                }
+            },
+            car: {
+                id: 'car',
+                vehicleType: 'car',
+                name: 'Option B: EV Car Plant & Fleet',
+                autoSteps: [
+                    { num: 'STEP 01', name: 'Module Placement', desc: 'Robotic gantry seating 800V pouch cell modules into tub' },
+                    { num: 'STEP 02', name: 'Sealant Dispensing', desc: 'Continuous automated liquid gasket polyurethane bead' },
+                    { num: 'STEP 03', name: 'Vision Inspection Gate', desc: 'Laser line profilometry verifying gasket bead continuity' },
+                    { num: 'STEP 04', name: 'Chassis Marriage', desc: 'Automated bolting of pack tub to BIW aluminum chassis' }
+                ],
+                vision: {
+                    target: 'Liquid Gasket Sealant Bead & Panel Gaps',
+                    specimenType: 'sealant',
+                    inspectLabel: 'Sealant Path Inspected:',
+                    inspectCount: '18.4 Meters',
+                    cleanDesc: 'Continuous gasket polyurethane bead verified with 0 gaps and nominal 4.2mm bead width.',
+                    defectDesc: 'Defect: Missing bead fragment (24.8mm gap) & panel gap tolerance exceeded at Flange 2.'
+                },
+                pdm: {
+                    focus: 'Battery Thermal Runaway Risk & State-of-Health (SoH) Diagnostics',
+                    rulNominal: '240,000',
+                    rulUnit: 'KILOMETERS REMAINING',
+                    subsystems: [
+                        { name: 'BMS 800V Cell Matrix', status: 'HEALTHY', metric: 'Cell ΔV: 8 mV | Thermal runaway risk: 0.02%' },
+                        { name: 'Active Glycol Thermal Loop', status: 'HEALTHY', metric: 'Coolant In: 26°C / Out: 31°C | Flow: 32 L/min' },
+                        { name: 'Dual PMSM Inverter Drive', status: 'HEALTHY', metric: 'DC-link voltage: 799.2V | PWM jitter: 0.04%' }
+                    ]
+                }
+            },
+            drone: {
+                id: 'drone',
+                vehicleType: 'drone',
+                name: 'Option C: EV Drone Facility & Fleet',
+                autoSteps: [
+                    { num: 'STEP 01', name: 'PCB Pick-and-Place', desc: 'SMT machine mounting components on ESC controller' },
+                    { num: 'STEP 02', name: 'Vision Component Inspection', desc: 'AOI camera checking solder meniscus and component polarity' },
+                    { num: 'STEP 03', name: 'Rotor Mounting', desc: 'Torque-monitored collet fastening brushless motors' },
+                    { num: 'STEP 04', name: 'Calibration Rig', desc: '6-DOF gyroscopic attitude and compass calibration' }
+                ],
+                vision: {
+                    target: 'Electronic Speed Controller (ESC) Solder Joints',
+                    specimenType: 'solder',
+                    inspectLabel: 'SMD Pins Inspected:',
+                    inspectCount: '512 Solder Pads',
+                    cleanDesc: 'IPC-A-610 Class 3 compliant concave solder fillets verified across all FET driver pins.',
+                    defectDesc: 'Defect: Critical solder bridge short detected between ESC FET gate leads #04 and #05.'
+                },
+                pdm: {
+                    focus: 'Micro-Bearing Wear & ESC Thermal Fatigue Diagnostics',
+                    rulNominal: '450',
+                    rulUnit: 'FLIGHT HOURS REMAINING',
+                    subsystems: [
+                        { name: '6x Brushless Rotor Motors', status: 'HEALTHY', metric: 'Motor RPM balance: ±14 RPM | Bearing index: 0.14' },
+                        { name: 'Triaxial Flight IMU', status: 'HEALTHY', metric: 'Vibration noise: 0.012g RMS (Nominal filtered)' },
+                        { name: 'LiPo High-Discharge Pack', status: 'HEALTHY', metric: 'Peak load voltage sag: -0.38V @ 120A' }
+                    ]
+                }
+            },
+            train: {
+                id: 'train',
+                vehicleType: 'train',
+                name: 'Option E: High-Speed Maglev Depot & Guideway',
+                autoSteps: [
+                    { num: 'STEP 01', name: 'Guideway Infeed', desc: 'Inductive guidance calibration & clearance envelope check' },
+                    { num: 'STEP 02', name: 'Vision Stator & Gap Scan', desc: 'High-speed line-scan camera capturing LSM stator teeth & levitation skid' },
+                    { num: 'STEP 03', name: 'Automated Cryo Coupling', desc: 'Robotic high-vacuum manifold mating liquid helium transfer port' },
+                    { num: 'STEP 04', name: 'Smart Bogie / Skid Swap', desc: 'AGV transshipment cart exchanging superconducting magnet pod' }
+                ],
+                vision: {
+                    target: 'Maglev Guideway LSM Stator Packs & Levitation Skids',
+                    specimenType: 'trainwheel',
+                    inspectLabel: 'Guideway Sectors Inspected:',
+                    inspectCount: '24 Guideway Sectors',
+                    cleanDesc: 'LSM stator teeth nominal, levitation airgap clearances within ±1.0mm tolerance; zero coil delamination.',
+                    defectDesc: 'CRITICAL DEFECT: Stator tooth core fracture & 2.4mm magnetic shielding fatigue detected on Levitation Skid #02.'
+                },
+                pdm: {
+                    focus: 'Superconducting Magnet Quench & LSM Thermal Breakdown Prognostics',
+                    rulNominal: '88,400',
+                    rulUnit: 'KILOMETERS REMAINING',
+                    subsystems: [
+                        { name: 'Levitation Magnet Modules', status: 'HEALTHY', metric: 'Levitation airgap: 12.2mm (Nominal 12.0mm ±1.5mm)' },
+                        { name: 'Cryogenic Refrigeration System', status: 'HEALTHY', metric: 'Helium boil-off: 0.02 L/h (Temp: 4.22K / Quench Margin: 3.8K)' },
+                        { name: 'Long-Stator Linear Motor (LSM)', status: 'HEALTHY', metric: 'Stator winding temp: 58.4°C (Phase ripple: 1.4%)' }
+                    ]
+                }
+            },
+            bus: {
+                id: 'bus',
+                vehicleType: 'bus',
+                name: 'Electric Transit Bus Plant & Fleet',
+                autoSteps: [
+                    { num: 'STEP 01', name: 'Chassis Frame Infeed', desc: 'Monocoque high-tensile steel frame alignment' },
+                    { num: 'STEP 02', name: 'Roof Battery Installation', desc: 'Overhead crane placing 350kWh roof pack' },
+                    { num: 'STEP 03', name: 'Vision Alignment Scan', desc: 'Camera scanning roof mounting bolts and high-voltage seals' },
+                    { num: 'STEP 04', name: 'Powertrain Comm.', desc: 'CAN-bus integration with dual permanent magnet motors' }
+                ],
+                vision: {
+                    target: 'Roof Battery Mounting Bolts & HV Cable Seals',
+                    specimenType: 'rivets',
+                    inspectLabel: 'Roof Fasteners Inspected:',
+                    inspectCount: '96 Units',
+                    cleanDesc: 'All roof fasteners torqued to specification and IP67 weather seals verified.',
+                    defectDesc: 'Defect: Missing O-ring seal & under-torqued bolt detected on Roof Pack Sector 3.'
+                },
+                pdm: {
+                    focus: 'Roof Battery Thermal Balancing & Dual Central PMSM Motors',
+                    rulNominal: '85,000',
+                    rulUnit: 'KILOMETERS REMAINING',
+                    subsystems: [
+                        { name: '350kWh Roof Battery Bank', status: 'HEALTHY', metric: 'Cell thermal spread: 1.1°C (Liquid cooled)' },
+                        { name: 'Dual Central PMSM Motors', status: 'HEALTHY', metric: 'Torque balance: 2,800 Nm | 96.8% Efficiency' },
+                        { name: 'Regen Braking ECU', status: 'HEALTHY', metric: 'Recuperation efficiency: 89.2%' }
+                    ]
+                }
+            }
+        };
+
+        const VEHICLE_DATA = {
+            airplane: {
+                name: "EV AERO-LIGHT AIRCRAFT v1.8",
+                mass: "1,450 kg",
+                cg: "1,200 mm",
+                speedMax: 320,
+                speedUnit: "KM/H",
+                components: [
+                    { id: "stator", name: "Dual-Redundant Stators", status: "NORMAL", mass: "85 kg", cg: "1,150 mm", stream: "Winding Temp: 74.2°C (Limit: 140°C)", camPos: [0, 2, 5], targetPos: [0, 0, 1.5] },
+                    { id: "pdu_load", name: "PDU Current Load Bus", status: "NORMAL", mass: "45 kg", cg: "1,250 mm", stream: "Total PDU Draw: 142.8 A (Max: 220 A)", camPos: [0, 3, 4], targetPos: [0, 0, -1] },
+                    { id: "bus_stab", name: "High-Voltage Bus Stability", status: "NORMAL", mass: "120 kg", cg: "1,100 mm", stream: "Bus Voltage: 798.5 V (Ripple: 0.8%)", camPos: [4, 2, 4], targetPos: [0, 0, 0] }
+                ]
+            },
+            drone: {
+                name: "EV HEAVY-LIFT DRONE MATRIX v3.4",
+                mass: "38 kg",
+                cg: "320 mm",
+                speedMax: 120,
+                speedUnit: "KM/H",
+                components: [
+                    { id: "esc_solder", name: "Motor RPM Variance", status: "NORMAL", mass: "3.2 kg", cg: "280 mm", stream: "Rotor RPM Spread: ±8 RPM (Limit ±45 RPM)", camPos: [0, 3, 4], targetPos: [0, 0, 0] },
+                    { id: "fcb_gate", name: "IMU Vibration Amplitude", status: "NORMAL", mass: "1.4 kg", cg: "310 mm", stream: "Tri-axis Accel RMS: 0.014g (Peak < 0.06g)", camPos: [2, 2, 2], targetPos: [0, 0, 0] },
+                    { id: "lipo_bus", name: "LiPo Voltage Sag", status: "NORMAL", mass: "14.5 kg", cg: "300 mm", stream: "12S Bus Voltage: 49.8V (Sag: 0.35V at 40A)", camPos: [0, 2, 3], targetPos: [0, 0, 0] }
+                ]
+            },
+            car: {
+                name: "EV GT-SEDAN POWERTRAIN v5.2",
+                mass: "2,180 kg",
+                cg: "480 mm",
+                speedMax: 260,
+                speedUnit: "KM/H",
+                components: [
+                    { id: "bms_delta", name: "BMS Cell Voltage Delta", status: "NORMAL", mass: "450 kg", cg: "420 mm", stream: "Max Delta V: 0.008V across 192 cells", camPos: [0, 4, 6], targetPos: [0, 0, 0] },
+                    { id: "coolant_loop", name: "Battery Coolant Temp", status: "NORMAL", mass: "35 kg", cg: "460 mm", stream: "Inlet: 28.5°C | Outlet: 33.1°C (Flow: 14 L/min)", camPos: [3, 2, 5], targetPos: [1, 0, 0] },
+                    { id: "dc_link", name: "Inverter DC-Link Voltage", status: "NORMAL", mass: "65 kg", cg: "510 mm", stream: "DC-Link: 796.4V (Ripple: 1.2V peak-to-peak)", camPos: [-3, 2, 4], targetPos: [-1, 0, 0] }
+                ]
+            },
+            bike: {
+                name: "EV RACING SUPERBIKE APEX v2.1",
+                mass: "215 kg",
+                cg: "540 mm",
+                speedMax: 290,
+                speedUnit: "KM/H",
+                components: [
+                    { id: "stator_temp", name: "Stator Winding Temperature", status: "NORMAL", mass: "28 kg", cg: "510 mm", stream: "Stator Temp: 82.4°C (Safe limit: 130°C)", camPos: [0, 2, 4], targetPos: [0, 0.4, 0] },
+                    { id: "housing_vib", name: "Triaxial Housing Vibration", status: "NORMAL", mass: "12 kg", cg: "490 mm", stream: "Vib RMS: 0.024g (ISO vibration class A)", camPos: [2, 2, 3], targetPos: [0, 0.3, 0] },
+                    { id: "current_ripple", name: "Phase Current Ripple", status: "NORMAL", mass: "8 kg", cg: "530 mm", stream: "Current Ripple: 1.8% THD at 350A peak", camPos: [-2, 2, 3], targetPos: [0, 0.5, 0] }
+                ]
+            },
+            bus: {
+                name: "EV CITY TRANSIT BUS v4.0",
+                mass: "16,500 kg",
+                cg: "1,100 mm",
+                speedMax: 105,
+                speedUnit: "KM/H",
+                components: [
+                    { id: "portal_axle", name: "Dual Portal Electric Axle", status: "NORMAL", mass: "950 kg", cg: "480 mm", stream: "Axle Gearbox Vib: 1.8 mm/s RMS (Class II)", camPos: [0, 3, 7], targetPos: [-2, 0, 0] },
+                    { id: "traction_inv", name: "Dual Traction Inverters", status: "NORMAL", mass: "110 kg", cg: "650 mm", stream: "Inverter Junction Temp: 72.4°C (Nominal)", camPos: [3, 4, 6], targetPos: [0, 1, 0] },
+                    { id: "oppcharge", name: "High-Power Opportunity Charger", status: "NORMAL", mass: "85 kg", cg: "2,400 mm", stream: "450kW DC Contact Resistance: 0.04 mΩ", camPos: [0, 7, 5], targetPos: [0, 2.5, 0] }
+                ]
+            },
+            train: {
+                name: "SCMAGLEV HIGH-SPEED CRUISE v10.4",
+                mass: "145,000 kg",
+                cg: "820 mm",
+                speedMax: 603,
+                speedUnit: "KM/H",
+                components: [
+                    { id: "maglev_airgap", name: "Levitation & Guidance Airgap Sensor", status: "NORMAL", mass: "240 kg", cg: "380 mm", stream: "EMS/EDS Airgap Clearance: 12.2 mm (Tolerance ±1.5 mm)", camPos: [0, 4, 7], targetPos: [-2, 0, 0] },
+                    { id: "cryo_temp", name: "Superconducting Magnet Cryo-Cooling", status: "NORMAL", mass: "3,800 kg", cg: "450 mm", stream: "Liquid He Cryo Temp: 4.22 K (Flux Density: 4.51 T)", camPos: [14, 5, 14], targetPos: [0, 0, 0] },
+                    { id: "lsm_sync", name: "Linear Synchronous Motor (LSM) Stator", status: "NORMAL", mass: "5,200 kg", cg: "620 mm", stream: "LSM Phase Angle Drift: 0.82° | Current Ripple: 1.4%", camPos: [0, 7, 5], targetPos: [0, 1.5, 0] }
+                ]
+            }
+        };
+
+        function initThreeEngine() {
+            const container = document.getElementById('three-canvas-container');
+            if (!container) return;
+
+            const w = container.clientWidth || 600;
+            const h = container.clientHeight || 450;
+
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x020a16, 0.035);
+
+            camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 1000);
+            camera.position.set(8, 4, 8);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(w, h);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxPolarAngle = Math.PI / 2 - 0.02;
+
+            scene.add(new THREE.AmbientLight(0xffffff, 0.65));
+            const pLight = new THREE.PointLight(0x00f3ff, 3.2, 35);
+            pLight.position.set(0, 6, 0);
+            scene.add(pLight);
+
+            const pLight2 = new THREE.PointLight(0x0066ff, 2.2, 30);
+            pLight2.position.set(-6, -2, -6);
+            scene.add(pLight2);
+
+            const gridHelper = new THREE.GridHelper(35, 35, 0x00f3ff, 0x063152);
+            gridHelper.position.y = -0.8;
+            scene.add(gridHelper);
+
+            buildVehicleModel(currentVehicleType);
+            updateIsolatedSubsystemsUI(currentVehicleType);
+
+            window.addEventListener('resize', onWindowResize);
+            animateThree();
+        }
+
+        function buildVehicleModel(type) {
+            if (vehicleGroup) scene.remove(vehicleGroup);
+            vehicleGroup = new THREE.Group();
+            animatedSpinners = [];
+
+            const wireMat = new THREE.MeshStandardMaterial({ color: 0x00f3ff, wireframe: true, transparent: true, opacity: 0.6 });
+            const glassMat = new THREE.MeshPhysicalMaterial({ color: 0x03182b, metalness: 0.85, roughness: 0.15, transparent: true, opacity: 0.65, clearcoat: 1.0 });
+            const darkMetal = new THREE.MeshStandardMaterial({ color: 0x091624, metalness: 0.85, roughness: 0.35 });
+            const rubberMat = new THREE.MeshStandardMaterial({ color: 0x07111c, roughness: 0.9 });
+            const rimMat = new THREE.MeshStandardMaterial({ color: 0xcae8f7, metalness: 0.95, roughness: 0.15 });
+            const glowCyan = new THREE.MeshBasicMaterial({ color: 0x00f3ff });
+            const glowBlue = new THREE.MeshBasicMaterial({ color: 0x0088ff });
+            const glowGreen = new THREE.MeshBasicMaterial({ color: 0x00ff88 });
+            const glowRed = new THREE.MeshBasicMaterial({ color: 0xff2a55 });
+            const windowMat = new THREE.MeshPhysicalMaterial({ color: 0x032242, roughness: 0.1, transparent: true, opacity: 0.75 });
+
+            if (type === 'airplane') {
+                // Fuselage
+                const fGeo = new THREE.CylinderGeometry(0.46, 0.26, 5.4, 18);
+                fGeo.rotateZ(-Math.PI / 2);
+                const fMesh = new THREE.Mesh(fGeo, glassMat);
+                fMesh.add(new THREE.Mesh(fGeo, wireMat));
+                vehicleGroup.add(fMesh);
+
+                // Canopy
+                const cGeo = new THREE.CylinderGeometry(0.35, 0.44, 1.4, 12);
+                cGeo.rotateZ(-Math.PI / 2);
+                const cMesh = new THREE.Mesh(cGeo, windowMat);
+                cMesh.position.set(0.8, 0.22, 0);
+                vehicleGroup.add(cMesh);
+
+                // Wings
+                const wGeo = new THREE.BoxGeometry(1.2, 0.08, 6.8);
+                const wMesh = new THREE.Mesh(wGeo, glassMat);
+                wMesh.position.set(0.1, 0.08, 0);
+                wMesh.add(new THREE.Mesh(wGeo, wireMat));
+                vehicleGroup.add(wMesh);
+
+                // Winglets
+                [-3.4, 3.4].forEach(z => {
+                    const wl = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.5, 0.04), glowCyan);
+                    wl.position.set(0.1, 0.28, z);
+                    vehicleGroup.add(wl);
+                });
+
+                // Tailfin (Vertical & Horizontal Stabilizers)
+                const vTail = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.1, 0.06), glassMat);
+                vTail.position.set(-2.2, 0.6, 0);
+                vTail.add(new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.1, 0.06), wireMat));
+                vehicleGroup.add(vTail);
+
+                const hTail = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.05, 2.2), glassMat);
+                hTail.position.set(-2.2, 1.1, 0);
+                hTail.add(new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.05, 2.2), wireMat));
+                vehicleGroup.add(hTail);
+
+                // Twin Propellers on wings
+                [-1.6, 1.6].forEach(z => {
+                    const nacelle = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.9, 12), darkMetal);
+                    nacelle.rotateZ(-Math.PI / 2);
+                    nacelle.position.set(0.4, 0.06, z);
+                    nacelle.add(new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.9, 12), wireMat));
+                    vehicleGroup.add(nacelle);
+
+                    const propGroup = new THREE.Group();
+                    propGroup.position.set(0.88, 0.06, z);
+                    const blade1 = new THREE.Mesh(new THREE.BoxGeometry(0.04, 1.3, 0.1), glowCyan);
+                    const blade2 = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.1, 1.3), glowCyan);
+                    propGroup.add(blade1, blade2);
+                    vehicleGroup.add(propGroup);
+                    animatedSpinners.push({ obj: propGroup, axis: 'x', speed: 0.22 });
+                });
+
+                // Tricycle Landing Gear
+                const noseLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.7, 8), darkMetal);
+                noseLeg.position.set(1.5, -0.45, 0);
+                const noseWheel = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.08, 12), rubberMat);
+                noseWheel.rotateZ(-Math.PI / 2);
+                noseWheel.position.set(1.5, -0.75, 0);
+                vehicleGroup.add(noseLeg, noseWheel);
+
+                [-1.1, 1.1].forEach(z => {
+                    const mainLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.7, 8), darkMetal);
+                    mainLeg.position.set(-0.2, -0.45, z);
+                    const mainWheel = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.1, 12), rubberMat);
+                    mainWheel.rotateZ(-Math.PI / 2);
+                    mainWheel.position.set(-0.2, -0.75, z);
+                    vehicleGroup.add(mainLeg, mainWheel);
+                });
+
+            } else if (type === 'drone') {
+                // Hexacopter Central Avionics Hull
+                const hubGeo = new THREE.CylinderGeometry(0.85, 1.1, 0.42, 6);
+                const hub = new THREE.Mesh(hubGeo, glassMat);
+                hub.add(new THREE.Mesh(hubGeo, wireMat));
+                vehicleGroup.add(hub);
+
+                // Top GPS Antenna Dome
+                const dome = new THREE.Mesh(new THREE.SphereGeometry(0.32, 16, 8), darkMetal);
+                dome.position.y = 0.26;
+                dome.add(new THREE.Mesh(new THREE.SphereGeometry(0.32, 16, 8), wireMat));
+                vehicleGroup.add(dome);
+
+                // 6 Radial Carbon Arms & Motors & Spinning Propellers
+                for (let i = 0; i < 6; i++) {
+                    const angle = (i * Math.PI) / 3;
+                    const armLen = 2.3;
+                    const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, armLen, 8), darkMetal);
+                    arm.rotateZ(Math.PI / 2);
+                    arm.rotateY(-angle);
+                    arm.position.set((Math.cos(angle) * armLen) / 2, 0.05, (Math.sin(angle) * armLen) / 2);
+                    vehicleGroup.add(arm);
+
+                    // Motor pod
+                    const mx = Math.cos(angle) * armLen;
+                    const mz = Math.sin(angle) * armLen;
+                    const motor = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.28, 12), darkMetal);
+                    motor.position.set(mx, 0.15, mz);
+                    motor.add(new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.28, 12), wireMat));
+                    vehicleGroup.add(motor);
+
+                    // LED tip beacon
+                    const beacon = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 8), i % 2 === 0 ? glowCyan : glowBlue);
+                    beacon.position.set(mx * 1.08, 0.15, mz * 1.08);
+                    vehicleGroup.add(beacon);
+
+                    // Rotor blade
+                    const rotor = new THREE.Group();
+                    rotor.position.set(mx, 0.32, mz);
+                    const b1 = new THREE.Mesh(new THREE.BoxGeometry(1.25, 0.02, 0.09), glowCyan);
+                    rotor.add(b1);
+                    vehicleGroup.add(rotor);
+                    animatedSpinners.push({ obj: rotor, axis: 'y', speed: (i % 2 === 0 ? 0.35 : -0.35) });
+                }
+
+                // Curved Carbon Landing Skids
+                [-0.75, 0.75].forEach(z => {
+                    const skid = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 3.2, 8), darkMetal);
+                    skid.rotateZ(Math.PI / 2);
+                    skid.position.set(0, -0.65, z);
+                    vehicleGroup.add(skid);
+
+                    [-0.8, 0.8].forEach(x => {
+                        const strut = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.65, 8), darkMetal);
+                        strut.position.set(x, -0.32, z);
+                        strut.rotateX(z > 0 ? 0.2 : -0.2);
+                        vehicleGroup.add(strut);
+                    });
+                });
+
+                // Under-mounted Optical Sensor Pod
+                const gimbal = new THREE.Mesh(new THREE.SphereGeometry(0.24, 16, 16), glowBlue);
+                gimbal.position.set(0, -0.3, 0);
+                vehicleGroup.add(gimbal);
+
+            } else if (type === 'car') {
+                // Low-slung Sports Aerodynamic Chassis
+                const bodyGroup = new THREE.Group();
+                const mainBody = new THREE.Mesh(new THREE.BoxGeometry(4.7, 0.46, 2.05), glassMat);
+                mainBody.position.y = 0.28;
+                mainBody.add(new THREE.Mesh(new THREE.BoxGeometry(4.7, 0.46, 2.05), wireMat));
+                bodyGroup.add(mainBody);
+
+                // Cabin Greenhouse (Tapered canopy)
+                const cabin = new THREE.Mesh(new THREE.BoxGeometry(2.3, 0.62, 1.45), glassMat);
+                cabin.position.set(-0.2, 0.78, 0);
+                cabin.add(new THREE.Mesh(new THREE.BoxGeometry(2.3, 0.62, 1.45), wireMat));
+                bodyGroup.add(cabin);
+
+                // Sloping Hood
+                const hood = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.26, 1.9), glassMat);
+                hood.position.set(1.5, 0.42, 0);
+                hood.rotation.z = -0.08;
+                hood.add(new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.26, 1.9), wireMat));
+                bodyGroup.add(hood);
+
+                // Front Laser Lightbars
+                const fLight = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.06, 1.7), glowCyan);
+                fLight.position.set(2.36, 0.36, 0);
+                bodyGroup.add(fLight);
+
+                // Rear Full-Width LED Tail Lightbar
+                const rLight = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.07, 1.95), glowBlue);
+                rLight.position.set(-2.36, 0.46, 0);
+                bodyGroup.add(rLight);
+
+                // Front Aero Splitter & Rear Diffuser
+                const splitter = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.05, 2.15), darkMetal);
+                splitter.position.set(2.2, 0.08, 0);
+                const diffuser = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.08, 2.05), darkMetal);
+                diffuser.position.set(-2.2, 0.12, 0);
+                diffuser.rotation.z = 0.15;
+                bodyGroup.add(splitter, diffuser);
+
+                vehicleGroup.add(bodyGroup);
+
+                // 4 Detailed Wheels (Tires + Rims + Brake Calipers)
+                const wheelPositions = [
+                    { x: 1.45, z: 1.08 },
+                    { x: 1.45, z: -1.08 },
+                    { x: -1.45, z: 1.08 },
+                    { x: -1.45, z: -1.08 }
+                ];
+                wheelPositions.forEach(wp => {
+                    const tire = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.28, 24), rubberMat);
+                    tire.rotateX(Math.PI / 2);
+                    tire.position.set(wp.x, 0.22, wp.z);
+
+                    const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.31, 0.31, 0.29, 16), rimMat);
+                    rim.rotateX(Math.PI / 2);
+                    rim.position.set(wp.x, 0.22, wp.z);
+
+                    const caliper = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.18, 0.1), glowCyan);
+                    caliper.position.set(wp.x, 0.35, wp.z + (wp.z > 0 ? -0.06 : 0.06));
+
+                    vehicleGroup.add(tire, rim, caliper);
+                });
+
+            } else if (type === 'bike') {
+                // EV Superbike Trellis Frame & Components
+                // 2 Wheels
+                [-1.6, 1.6].forEach(x => {
+                    const tire = new THREE.Mesh(new THREE.CylinderGeometry(0.52, 0.52, 0.22, 24), rubberMat);
+                    tire.rotateX(Math.PI / 2);
+                    tire.position.set(x, 0.24, 0);
+
+                    const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.23, 16), rimMat);
+                    rim.rotateX(Math.PI / 2);
+                    rim.position.set(x, 0.24, 0);
+
+                    const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.25, 12), darkMetal);
+                    disc.rotateX(Math.PI / 2);
+                    disc.position.set(x, 0.24, 0);
+
+                    vehicleGroup.add(tire, rim, disc);
+                });
+
+                // Front Telescopic Inverted Forks (Angled 24 deg)
+                [-0.14, 0.14].forEach(z => {
+                    const fork = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.7, 8), darkMetal);
+                    fork.position.set(1.15, 0.85, z);
+                    fork.rotation.z = -0.42;
+                    vehicleGroup.add(fork);
+                });
+
+                // Handlebars
+                const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.75, 8), darkMetal);
+                bar.rotateX(Math.PI / 2);
+                bar.position.set(0.85, 1.5, 0);
+                vehicleGroup.add(bar);
+
+                // Central Battery Monoblock & Motor Case
+                const batBox = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.7, 0.52), glassMat);
+                batBox.position.set(0, 0.65, 0);
+                batBox.add(new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.7, 0.52), wireMat));
+                vehicleGroup.add(batBox);
+
+                // Exposed Trellis Spaceframe
+                const trellis = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.85, 0.62), wireMat);
+                trellis.position.set(0.1, 0.75, 0);
+                vehicleGroup.add(trellis);
+
+                // Sculpted Tank / Aerodynamic Cowl
+                const tank = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.45, 0.58), glassMat);
+                tank.position.set(0.35, 1.15, 0);
+                tank.rotation.z = -0.15;
+                tank.add(new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.45, 0.58), wireMat));
+                vehicleGroup.add(tank);
+
+                // Sharp Race Seat & Tail Cowl
+                const tail = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.25, 0.35), glassMat);
+                tail.position.set(-0.7, 1.05, 0);
+                tail.rotation.z = 0.2;
+                tail.add(new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.25, 0.35), wireMat));
+                vehicleGroup.add(tail);
+
+                // Rear LED Taillight
+                const bLight = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.08, 0.25), glowBlue);
+                bLight.position.set(-1.18, 1.15, 0);
+                vehicleGroup.add(bLight);
+
+                // Front Headlight cluster
+                const fHead = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.15, 0.3), glowCyan);
+                fHead.position.set(1.35, 1.25, 0);
+                vehicleGroup.add(fHead);
+
+                // Rear Swingarm
+                const swingarm = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.12, 0.42), darkMetal);
+                swingarm.position.set(-0.8, 0.35, 0);
+                swingarm.rotation.z = -0.15;
+                vehicleGroup.add(swingarm);
+
+            } else if (type === 'bus') {
+                // Electric Transit Bus Hull
+                const busHull = new THREE.Mesh(new THREE.BoxGeometry(8.8, 2.3, 2.4), glassMat);
+                busHull.position.y = 1.25;
+                busHull.add(new THREE.Mesh(new THREE.BoxGeometry(8.8, 2.3, 2.4), wireMat));
+                vehicleGroup.add(busHull);
+
+                // Panoramic Windshield
+                const windshield = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.2, 2.2), windowMat);
+                windshield.position.set(4.41, 1.5, 0);
+                vehicleGroup.add(windshield);
+
+                // Passenger Windows Ribbon (Left & Right)
+                [-1.21, 1.21].forEach(z => {
+                    const sideWin = new THREE.Mesh(new THREE.BoxGeometry(7.2, 0.85, 0.05), windowMat);
+                    sideWin.position.set(-0.3, 1.6, z);
+                    vehicleGroup.add(sideWin);
+                });
+
+                // Roof Battery Bank Pods
+                const roofPack = new THREE.Mesh(new THREE.BoxGeometry(5.2, 0.36, 1.8), darkMetal);
+                roofPack.position.set(0, 2.56, 0);
+                roofPack.add(new THREE.Mesh(new THREE.BoxGeometry(5.2, 0.36, 1.8), wireMat));
+                vehicleGroup.add(roofPack);
+
+                // Front LED Destination Display
+                const destDisplay = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.28, 1.9), glowCyan);
+                destDisplay.position.set(4.41, 2.22, 0);
+                vehicleGroup.add(destDisplay);
+
+                // 6 Wheels (Front single axle, Rear dual axle)
+                const busWheelPositions = [
+                    { x: 2.7, z: 1.15 },
+                    { x: 2.7, z: -1.15 },
+                    { x: -2.1, z: 1.15 },
+                    { x: -2.1, z: -1.15 },
+                    { x: -3.3, z: 1.15 },
+                    { x: -3.3, z: -1.15 }
+                ];
+                busWheelPositions.forEach(wp => {
+                    const tire = new THREE.Mesh(new THREE.CylinderGeometry(0.48, 0.48, 0.32, 20), rubberMat);
+                    tire.rotateX(Math.PI / 2);
+                    tire.position.set(wp.x, 0.24, wp.z);
+                    const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.33, 16), rimMat);
+                    rim.rotateX(Math.PI / 2);
+                    rim.position.set(wp.x, 0.24, wp.z);
+                    vehicleGroup.add(tire, rim);
+                });
+
+            } else if (type === 'train') {
+                // High-Speed SCMaglev / Transrapid Aerodynamic Streamliner
+                // Elevate entire train body to show true levitation
+                const maglevGroup = new THREE.Group();
+                maglevGroup.position.y = 0.55; // Floating in mid-air over guideway
+
+                // Main Aerodynamic Fuselage
+                const carBody = new THREE.Mesh(new THREE.BoxGeometry(9.6, 1.85, 2.2), glassMat);
+                carBody.position.set(-1.0, 0.95, 0);
+                carBody.add(new THREE.Mesh(new THREE.BoxGeometry(9.6, 1.85, 2.2), wireMat));
+                maglevGroup.add(carBody);
+
+                // Hyper-Aerodynamic Long Duckbill / Needle Maglev Nose
+                const nose = new THREE.Mesh(new THREE.ConeGeometry(1.1, 4.4, 32), glassMat);
+                nose.rotateZ(-Math.PI / 2);
+                nose.position.set(5.7, 0.75, 0);
+                nose.scale.set(0.68, 1.0, 1.08);
+                nose.add(new THREE.Mesh(new THREE.ConeGeometry(1.1, 4.4, 32), wireMat));
+                maglevGroup.add(nose);
+
+                // Cockpit Aerodynamic Window
+                const cWindow = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.32, 1.3), glowCyan);
+                cWindow.position.set(4.5, 1.25, 0);
+                cWindow.rotation.z = -0.22;
+                maglevGroup.add(cWindow);
+
+                // Continuous Flush Ribbon Windows
+                [-1.11, 1.11].forEach(z => {
+                    const win = new THREE.Mesh(new THREE.BoxGeometry(8.6, 0.32, 0.04), windowMat);
+                    win.position.set(-1.2, 1.15, z);
+                    maglevGroup.add(win);
+                });
+
+                // Wrap-Around Levitation & Guidance Magnet Skirts (Transrapid / SCMaglev Wrap-Around Fairings)
+                [-1.25, 1.25].forEach(z => {
+                    // Outer shroud that curves down and inward under the guideway
+                    const skirt = new THREE.Mesh(new THREE.BoxGeometry(9.2, 0.9, 0.15), darkMetal);
+                    skirt.position.set(-0.8, 0.35, z);
+                    skirt.add(new THREE.Mesh(new THREE.BoxGeometry(9.2, 0.9, 0.15), wireMat));
+
+                    // Inward lower wrap-around electromagnetic claw
+                    const claw = new THREE.Mesh(new THREE.BoxGeometry(8.8, 0.18, 0.45), darkMetal);
+                    claw.position.set(-0.8, -0.15, z > 0 ? z - 0.22 : z + 0.22);
+                    claw.add(new THREE.Mesh(new THREE.BoxGeometry(8.8, 0.18, 0.45), wireMat));
+
+                    // Active Superconducting Levitation Coils (Glowing Cyan)
+                    for (let cx = -4.0; cx <= 3.0; cx += 1.4) {
+                        const coil = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.22, 0.08), glowCyan);
+                        coil.position.set(cx, 0.25, z > 0 ? z + 0.04 : z - 0.04);
+                        maglevGroup.add(coil);
+
+                        const lowCoil = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.08, 0.3), glowBlue);
+                        lowCoil.position.set(cx, -0.16, z > 0 ? z - 0.22 : z + 0.22);
+                        maglevGroup.add(lowCoil);
+                    }
+
+                    maglevGroup.add(skirt, claw);
+                });
+
+                vehicleGroup.add(maglevGroup);
+
+                // Concrete / Steel Guideway Beam running underneath
+                const guidewayBeam = new THREE.Mesh(new THREE.BoxGeometry(22, 0.55, 1.7), darkMetal);
+                guidewayBeam.position.set(0, 0.05, 0);
+                guidewayBeam.add(new THREE.Mesh(new THREE.BoxGeometry(22, 0.55, 1.7), wireMat));
+
+                // Guideway Stator Reaction Plates (Both Sides)
+                [-0.88, 0.88].forEach(gz => {
+                    const statorPlate = new THREE.Mesh(new THREE.BoxGeometry(21.5, 0.28, 0.06), glowBlue);
+                    statorPlate.position.set(0, 0.05, gz);
+                    vehicleGroup.add(statorPlate);
+                });
+
+                // Guideway Support Pillars
+                [-6, 0, 6].forEach(px => {
+                    const pillar = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.4, 1.1), darkMetal);
+                    pillar.position.set(px, -0.9, 0);
+                    pillar.add(new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.4, 1.1), wireMat));
+                    vehicleGroup.add(pillar);
+                });
+
+                vehicleGroup.add(guidewayBeam);
+            }
+
+            scene.add(vehicleGroup);
+        }
+
+        function animateThree() {
+            requestAnimationFrame(animateThree);
+            if (vehicleGroup) {
+                vehicleGroup.rotation.y += 0.0015;
+            }
+            if (animatedSpinners.length > 0) {
+                animatedSpinners.forEach(s => {
+                    if (s.axis === 'x') s.obj.rotation.x += s.speed;
+                    else if (s.axis === 'y') s.obj.rotation.y += s.speed;
+                    else if (s.axis === 'z') s.obj.rotation.z += s.speed;
+                });
+            }
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        function onWindowResize() {
+            const container = document.getElementById('three-canvas-container');
+            if (!container || !renderer || !camera) return;
+            const w = container.clientWidth;
+            const h = container.clientHeight;
+            if (w === 0 || h === 0) return;
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+            renderer.setSize(w, h);
+        }
+
+        function applyIndustryConfig(configId) {
+            currentIndustryConfigId = configId;
+            const cfg = INDUSTRY_CONFIGS[configId] || INDUSTRY_CONFIGS.plane;
+
+            // 1. Sync Dropdown and Tabs
+            const sel = document.getElementById('industry-config-select');
+            if (sel && sel.value !== configId && Array.from(sel.options).some(o => o.value === configId)) {
+                sel.value = configId;
+            }
+
+            currentVehicleType = cfg.vehicleType;
+            document.querySelectorAll('.dt-v-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.getAttribute('data-type') === currentVehicleType);
+            });
+
+            // 2. Update Digital Twin 3D View & Isolated Subsystems
+            const vData = VEHICLE_DATA[currentVehicleType];
+            if (vData) {
+                const hudName = document.getElementById('hud-model-name');
+                if (hudName) hudName.innerText = vData.name;
+                const vLabel = document.getElementById('vehicle-type-label');
+                if (vLabel) vLabel.innerText = currentVehicleType.toUpperCase();
+            }
+            buildVehicleModel(currentVehicleType);
+            updateIsolatedSubsystemsUI(currentVehicleType);
+
+            // 3. Synchronize Module 1 (Factory Automation Steps)
+            cfg.autoSteps.forEach((step, idx) => {
+                const nodeName = document.getElementById(`step-name-${idx + 1}`);
+                if (nodeName) nodeName.innerText = step.name;
+            });
+            const actionText = document.getElementById('schematic-action-text');
+            if (actionText && !isAutoRunning) {
+                actionText.innerText = `READY: ${cfg.name.toUpperCase()}`;
+            }
+
+            // 4. Synchronize Module 2 (Machine Vision Quality Control)
+            const targetEl = document.getElementById('vision-target-text');
+            if (targetEl) targetEl.innerText = `TARGET: ${cfg.vision.target}`;
+            const inspectLabel = document.getElementById('vision-inspect-label');
+            if (inspectLabel) inspectLabel.innerText = cfg.vision.inspectLabel;
+            const inspectCount = document.getElementById('vision-inspect-count');
+            if (inspectCount) inspectCount.innerText = cfg.vision.inspectCount;
+
+            renderVisionCanvas();
+
+            // 5. Synchronize Module 4 (Predictive Maintenance Prognostics)
+            const rulHours = document.getElementById('pdm-rul-hours');
+            if (rulHours && !isPdmSimulatedRisk) rulHours.innerText = cfg.pdm.rulNominal;
+            const rulUnit = document.getElementById('pdm-rul-unit');
+            if (rulUnit) rulUnit.innerText = cfg.pdm.rulUnit;
+
+            const pdmContainer = document.getElementById('pdm-prognostic-cards');
+            if (pdmContainer) {
+                pdmContainer.innerHTML = '';
+                cfg.pdm.subsystems.forEach(sub => {
+                    const card = document.createElement('div');
+                    card.style.cssText = 'background:var(--bg-card); border:1px solid var(--border-cyan); border-radius:5px; padding:10px;';
+                    card.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                            <span style="font-weight:600; font-size:0.84rem;">${sub.name}</span>
+                            <span class="pdm-sub-health" style="font-family:var(--font-mono); font-size:0.74rem; color:var(--neon-green);">${sub.status}</span>
+                        </div>
+                        <div style="font-size:0.74rem; color:var(--text-muted);">${sub.metric}</div>
+                    `;
+                    pdmContainer.appendChild(card);
+                });
+
+                const btn = document.createElement('button');
+                btn.className = 'cyber-btn';
+                btn.id = 'btn-simulate-failure-risk';
+                btn.style.cssText = 'margin-top:auto; border-color:var(--neon-amber); color:var(--neon-amber);';
+                btn.innerHTML = `<i data-lucide="zap-off"></i> SIMULATE CRITICAL WEAR INGESTION`;
+                btn.addEventListener('click', togglePdmFailureSimulation);
+                pdmContainer.appendChild(btn);
+            }
+
+            lucide.createIcons();
+        }
+
+        function setupVehicleTabs() {
+            document.querySelectorAll('.dt-v-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const vType = tab.getAttribute('data-type');
+                    // Map vehicle type to industry configuration
+                    let matchedConfig = 'plane';
+                    if (vType === 'bike') matchedConfig = 'motor';
+                    else if (vType === 'car') matchedConfig = 'car';
+                    else if (vType === 'drone') matchedConfig = 'drone';
+                    else if (vType === 'train') matchedConfig = 'train';
+                    else if (vType === 'bus') matchedConfig = 'bus';
+                    else if (vType === 'airplane') matchedConfig = 'plane';
+
+                    applyIndustryConfig(matchedConfig);
+                });
+            });
+
+            const sel = document.getElementById('industry-config-select');
+            if (sel) {
+                sel.addEventListener('change', (e) => {
+                    applyIndustryConfig(e.target.value);
+                });
+            }
+        }
+
+        function updateIsolatedSubsystemsUI(vType) {
+            const vData = VEHICLE_DATA[vType];
+            if (!vData) return;
+            const listEl = document.getElementById('dt-component-list');
+            if (!listEl) return;
+            listEl.innerHTML = '';
+
+            vData.components.forEach((comp, idx) => {
+                const card = document.createElement('div');
+                card.className = `component-card ${idx === 0 ? 'active' : ''}`;
+                card.innerHTML = `
+                    <div class="comp-info">
+                        <i data-lucide="shield" class="comp-icon"></i>
+                        <span class="comp-name">${comp.name}</span>
+                    </div>
+                    <span class="comp-status" id="comp-status-${comp.id}">${comp.status}</span>
+                `;
+                card.addEventListener('click', () => {
+                    document.querySelectorAll('.component-card').forEach(c => c.classList.remove('active'));
+                    card.classList.add('active');
+                    isolateComponent3D(comp);
+                });
+                listEl.appendChild(card);
+            });
+
+            if (vData.components.length > 0) {
+                isolateComponent3D(vData.components[0]);
+            }
+            lucide.createIcons();
+        }
+
+        function isolateComponent3D(comp) {
+            document.getElementById('iso-target').innerText = comp.name;
+            document.getElementById('iso-mass').innerText = comp.mass;
+            document.getElementById('iso-cg').innerText = comp.cg;
+            if (comp.stream) {
+                document.getElementById('iso-telemetry').innerText = comp.stream;
+            }
+
+            const [cx, cy, cz] = comp.camPos;
+            const [tx, ty, tz] = comp.targetPos;
+
+            let s = 0;
+            const startCam = camera.position.clone();
+            const startTar = controls.target.clone();
+            const endCam = new THREE.Vector3(cx, cy, cz);
+            const endTar = new THREE.Vector3(tx, ty, tz);
+
+            const stepInt = setInterval(() => {
+                s++;
+                const p = s / 25;
+                camera.position.lerpVectors(startCam, endCam, p);
+                controls.target.lerpVectors(startTar, endTar, p);
+                controls.update();
+                if (s >= 25) clearInterval(stepInt);
+            }, 16);
+        }
+
+        function setupTelemetrySliders() {
+            document.querySelectorAll('.telemetry-tabs .tab-btn').forEach(b => {
+                b.addEventListener('click', () => {
+                    document.querySelectorAll('.telemetry-tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
+                    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+                    b.classList.add('active');
+                    document.getElementById(`tab-${b.getAttribute('data-tab')}`).classList.add('active');
+                });
+            });
+
+            const inputs = ['input-gravity', 'input-pitch-roll', 'input-latency', 'input-safety-vel', 'input-env-param', 'input-soc', 'input-temp', 'input-speed'];
+            inputs.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', runTelemetryValidation);
+            });
+        }
+
+        function runTelemetryValidation() {
+            const grav = parseFloat(document.getElementById('input-gravity').value);
+            const pitch = parseFloat(document.getElementById('input-pitch-roll').value);
+            const lat = parseFloat(document.getElementById('input-latency').value);
+            const speed = parseFloat(document.getElementById('input-speed').value);
+            const soc = parseFloat(document.getElementById('input-soc').value);
+
+            document.getElementById('val-gravity').innerText = grav.toFixed(1);
+            document.getElementById('val-pitch-roll').innerText = pitch;
+            document.getElementById('val-latency').innerText = lat;
+            document.getElementById('val-speed').innerText = speed;
+            document.getElementById('hud-speed-val').innerText = speed;
+            document.getElementById('val-soc').innerText = soc;
+
+            const stall = Math.max(0.5, (2.2 - (Math.abs(pitch) * 0.03))).toFixed(2);
+            document.getElementById('val-stall-margin').innerText = stall + (stall < 1.0 ? ' (STALL RISK)' : ' (STABLE)');
+
+            const badge = document.getElementById('global-validation-badge');
+            const isPassing = (grav <= 2.8) && (lat <= 35) && (stall >= 1.0) && (soc >= 5);
+
+            if (isPassing) {
+                badge.className = 'badge-pass';
+                badge.innerHTML = '<i data-lucide="shield-check"></i> MODEL SUCCESSFUL [PASS]';
+            } else {
+                badge.className = 'badge-fail';
+                badge.innerHTML = '<i data-lucide="alert-triangle"></i> MODEL UNSUCCESSFUL [FAIL]';
+            }
+            lucide.createIcons();
+        }
+
+        /* =========================================================================
+           MODULE 1: FACTORY AUTOMATION (Iylamaran)
+           ========================================================================= */
+        let autoStep = 1;
+        let autoTimer = null;
+        let isAutoRunning = false;
+
+        function setupAutomation() {
+            document.getElementById('btn-start-auto').addEventListener('click', () => {
+                if (isAutoRunning) return;
+                isAutoRunning = true;
+                document.getElementById('auto-state-badge').innerText = 'STATE: RUNNING';
+                document.getElementById('auto-state-badge').className = 'badge-pass';
+                advanceAutoStep();
+            });
+
+            document.getElementById('btn-pause-auto').addEventListener('click', () => {
+                isAutoRunning = false;
+                clearTimeout(autoTimer);
+                document.getElementById('auto-state-badge').innerText = 'STATE: PAUSED';
+                logAutoEvent('Production sequence paused by operator.');
+            });
+
+            document.getElementById('btn-reset-auto').addEventListener('click', () => {
+                isAutoRunning = false;
+                clearTimeout(autoTimer);
+                autoStep = 1;
+                document.getElementById('auto-state-badge').innerText = 'STATE: IDLE';
+                updateStepUI();
+                logAutoEvent('Production cycle reset to initial state.');
+            });
+        }
+
+        function advanceAutoStep() {
+            if (!isAutoRunning) return;
+            updateStepUI();
+            const cfg = INDUSTRY_CONFIGS[currentIndustryConfigId] || INDUSTRY_CONFIGS.plane;
+            const steps = cfg.autoSteps;
+
+            if (autoStep === 1) {
+                logAutoEvent(`Step 1: ${steps[0].name} in progress - ${steps[0].desc}`);
+                document.getElementById('schematic-action-text').innerText = `STEP 1: ${steps[0].name.toUpperCase()}`;
+                autoTimer = setTimeout(() => { autoStep = 2; advanceAutoStep(); }, 1800);
+            } else if (autoStep === 2) {
+                logAutoEvent(`Step 2: ${steps[1].name} in progress - ${steps[1].desc}`);
+                document.getElementById('schematic-action-text').innerText = `STEP 2: ${steps[1].name.toUpperCase()}`;
+                autoTimer = setTimeout(() => { autoStep = 3; advanceAutoStep(); }, 1800);
+            } else if (autoStep === 3) {
+                logAutoEvent(`Step 3: ${steps[2].name} active! Triggering Module 2 Vision Gate...`);
+                document.getElementById('schematic-action-text').innerText = `STEP 3: ${steps[2].name.toUpperCase()}`;
+                
+                setTimeout(() => {
+                    logAutoEvent(`[CROSS-MODULE] Machine Vision Gate: 0 DEFECTS CONFIRMED [PASS] on ${cfg.vision.target}.`);
+                    autoStep = 4;
+                    advanceAutoStep();
+                }, 2200);
+            } else if (autoStep === 4) {
+                logAutoEvent(`Step 4: ${steps[3].name} completed! Production cycle verified.`);
+                document.getElementById('schematic-action-text').innerText = `STEP 4: ${steps[3].name.toUpperCase()}`;
+                document.getElementById('auto-state-badge').innerText = 'STATE: COMPLETED';
+                isAutoRunning = false;
+            }
+        }
+
+        function updateStepUI() {
+            for (let i = 1; i <= 4; i++) {
+                const node = document.getElementById(`step-node-${i}`);
+                const status = document.getElementById(`step-status-${i}`);
+                if (i < autoStep) {
+                    node.className = 'step-node completed';
+                    status.innerText = 'PASS [OK]';
+                } else if (i === autoStep && isAutoRunning) {
+                    node.className = 'step-node active';
+                    status.innerText = 'PROCESSING...';
+                } else {
+                    node.className = 'step-node';
+                    status.innerText = 'WAITING';
+                }
+            }
+        }
+
+        function logAutoEvent(msg) {
+            const logBox = document.getElementById('auto-event-log');
+            const time = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.innerHTML = `<span style="color:var(--text-muted);">${time}</span> ${msg}`;
+            logBox.appendChild(div);
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        /* =========================================================================
+           MODULE 2: MACHINE VISION QUALITY CONTROL (Muthukumar)
+           ========================================================================= */
+        let hasVisionDefect = false;
+
+        function setupVisionModule() {
+            document.getElementById('btn-run-vision-scan').addEventListener('click', () => {
+                renderVisionCanvas();
+            });
+
+            document.getElementById('btn-toggle-defect').addEventListener('click', () => {
+                hasVisionDefect = !hasVisionDefect;
+                const btn = document.getElementById('btn-toggle-defect');
+                btn.innerHTML = hasVisionDefect 
+                    ? '<i data-lucide="check"></i> RESTORE CLEAN SPECIMEN' 
+                    : '<i data-lucide="alert-triangle"></i> INJECT DEFECT SAMPLE';
+                renderVisionCanvas();
+                lucide.createIcons();
+            });
+        }
+
+        function renderVisionCanvas() {
+            const canvas = document.getElementById('vision-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth || 600;
+            canvas.height = canvas.parentElement.clientHeight || 380;
+
+            const cfg = INDUSTRY_CONFIGS[currentIndustryConfigId] || INDUSTRY_CONFIGS.plane;
+            const specType = cfg.vision.specimenType;
+
+            ctx.fillStyle = '#0a0305';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Technical reticle grid
+            ctx.strokeStyle = 'rgba(255, 42, 85, 0.12)';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 40) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += 40) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+            }
+
+            if (specType === 'hairpins') {
+                // Option A: Copper Stator Hairpin Welds
+                const hairpins = [
+                    { x: 140, y: 190 }, { x: 250, y: 190 }, { x: 360, y: 190 }, { x: 470, y: 190 }
+                ];
+                hairpins.forEach((h, idx) => {
+                    const isDefective = hasVisionDefect && (idx === 2);
+                    // Draw copper hairpin crown legs
+                    ctx.strokeStyle = '#c87d3b';
+                    ctx.lineWidth = 14;
+                    ctx.beginPath();
+                    ctx.moveTo(h.x - 20, h.y + 70);
+                    ctx.lineTo(h.x - 20, h.y + 10);
+                    ctx.lineTo(h.x + 20, h.y + 10);
+                    ctx.lineTo(h.x + 20, h.y + 70);
+                    ctx.stroke();
+
+                    // Weld nugget crown
+                    ctx.beginPath();
+                    ctx.arc(h.x, h.y + 8, 16, 0, Math.PI * 2);
+                    ctx.fillStyle = isDefective ? '#ff0033' : '#e6a15c';
+                    ctx.fill();
+
+                    // Bounding Box
+                    ctx.strokeStyle = isDefective ? '#ff0033' : '#ff2a55';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(h.x - 32, h.y - 12, 64, 90);
+
+                    ctx.font = '11px "JetBrains Mono", monospace';
+                    ctx.fillStyle = isDefective ? '#ff0033' : '#ff2a55';
+                    ctx.fillText(isDefective ? 'BURNED / UNFUSED' : 'WELD 99.8% OK', h.x - 32, h.y - 18);
+                });
+
+            } else if (specType === 'sealant') {
+                // Option B: Liquid Gasket Sealant Bead & Flange
+                ctx.strokeStyle = '#2a141b';
+                ctx.lineWidth = 50;
+                ctx.beginPath();
+                ctx.moveTo(60, 200);
+                ctx.lineTo(canvas.width - 60, 200);
+                ctx.stroke();
+
+                // Continuous polyurethane bead
+                ctx.strokeStyle = '#00ff88';
+                ctx.lineWidth = 10;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(70, 200);
+                if (hasVisionDefect) {
+                    ctx.lineTo(240, 200);
+                    ctx.stroke();
+                    // Gap discontinuity
+                    ctx.beginPath();
+                    ctx.moveTo(330, 200);
+                    ctx.lineTo(canvas.width - 70, 200);
+                    ctx.stroke();
+
+                    // Defect Callout Box on Gap
+                    ctx.strokeStyle = '#ff0033';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(230, 160, 110, 80);
+                    ctx.font = '11px "JetBrains Mono", monospace';
+                    ctx.fillStyle = '#ff0033';
+                    ctx.fillText('DISCONTINUITY / GAP 24.8mm', 200, 150);
+                } else {
+                    ctx.lineTo(canvas.width - 70, 200);
+                    ctx.stroke();
+
+                    ctx.strokeStyle = '#ff2a55';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(180, 170, 240, 60);
+                    ctx.font = '11px "JetBrains Mono", monospace';
+                    ctx.fillStyle = '#ff2a55';
+                    ctx.fillText('BEAD CONTINUOUS [PASS]', 220, 160);
+                }
+
+            } else if (specType === 'solder') {
+                // Option C: Drone ESC PCB Solder Joints
+                // PCB Body
+                ctx.fillStyle = '#061a10';
+                ctx.fillRect(100, 80, canvas.width - 200, 220);
+                // IC Package
+                ctx.fillStyle = '#1c1c24';
+                ctx.fillRect(canvas.width / 2 - 80, 120, 160, 140);
+                ctx.fillStyle = '#a0a0b0';
+                ctx.font = '12px "JetBrains Mono", monospace';
+                ctx.fillText('ESC-DRIVER-v3', canvas.width / 2 - 50, 195);
+
+                // Lead pins
+                const pins = [130, 160, 190, 220, 250];
+                pins.forEach((py, idx) => {
+                    const isDefective = hasVisionDefect && (idx === 1);
+                    ctx.fillStyle = '#d8d8e0';
+                    ctx.fillRect(canvas.width / 2 - 120, py, 40, 12);
+                    ctx.fillRect(canvas.width / 2 + 80, py, 40, 12);
+
+                    if (isDefective) {
+                        // Solder Bridge between pin 1 and pin 2
+                        ctx.fillStyle = '#ff0033';
+                        ctx.fillRect(canvas.width / 2 - 110, py, 20, 38);
+
+                        ctx.strokeStyle = '#ff0033';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(canvas.width / 2 - 130, py - 6, 60, 52);
+                        ctx.font = '11px "JetBrains Mono", monospace';
+                        ctx.fillText('SOLDER BRIDGE SHORT', canvas.width / 2 - 220, py + 22);
+                    }
+                });
+
+            } else if (specType === 'trainwheel') {
+                // Option E: Maglev Guideway LSM Stator Packs & Levitation Skids
+                ctx.fillStyle = '#06192d';
+                ctx.fillRect(40, 70, canvas.width - 80, 180);
+                ctx.strokeStyle = '#00f3ff';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(40, 70, canvas.width - 80, 180);
+
+                // Stator teeth slots
+                for (let sx = 65; sx < canvas.width - 80; sx += 52) {
+                    ctx.fillStyle = '#0a2540';
+                    ctx.fillRect(sx, 85, 34, 150);
+                    ctx.strokeStyle = '#00f3ff';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(sx, 85, 34, 150);
+                }
+
+                // Airgap Line
+                ctx.strokeStyle = 'rgba(0, 243, 255, 0.7)';
+                ctx.setLineDash([8, 4]);
+                ctx.beginPath();
+                ctx.moveTo(40, 160);
+                ctx.lineTo(canvas.width - 40, 160);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                if (hasVisionDefect) {
+                    ctx.strokeStyle = '#ff0033';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(canvas.width / 2 - 45, 95, 85, 130);
+                    ctx.fillStyle = '#ff0033';
+                    ctx.font = '11px "JetBrains Mono", monospace';
+                    ctx.fillText('STATOR CORE FRACTURE', canvas.width / 2 - 70, 85);
+                    ctx.fillText('GAP: 7.8mm [DEFECT]', canvas.width / 2 - 60, 245);
+                } else {
+                    ctx.strokeStyle = '#00ff88';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(canvas.width / 2 - 80, 100, 160, 120);
+                    ctx.fillStyle = '#00ff88';
+                    ctx.font = '11px "JetBrains Mono", monospace';
+                    ctx.fillText('LSM STATOR TEETH [NOMINAL]', canvas.width / 2 - 85, 90);
+                    ctx.fillText('AIRGAP: 12.2mm ±0.4mm [PASS]', canvas.width / 2 - 95, 245);
+                }
+
+            } else {
+                // Option D: Aluminum Skin Rivets (Default)
+                const rivets = [
+                    { x: 120, y: 130 }, { x: 230, y: 130 }, { x: 340, y: 130 }, { x: 450, y: 130 },
+                    { x: 120, y: 250 }, { x: 230, y: 250 }, { x: 340, y: 250 }, { x: 450, y: 250 }
+                ];
+                rivets.forEach((r, idx) => {
+                    const isDefective = hasVisionDefect && (idx === 2);
+                    ctx.beginPath();
+                    ctx.arc(r.x, r.y, 16, 0, Math.PI * 2);
+                    ctx.fillStyle = isDefective ? '#ff0033' : '#00ff88';
+                    ctx.fill();
+
+                    ctx.strokeStyle = isDefective ? '#ff0033' : '#ff2a55';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(r.x - 24, r.y - 24, 48, 48);
+
+                    ctx.font = '11px "JetBrains Mono", monospace';
+                    ctx.fillStyle = isDefective ? '#ff0033' : '#ff2a55';
+                    ctx.fillText(isDefective ? 'CRACK/PITTING' : 'RIVET: 99.6%', r.x - 24, r.y - 28);
+                });
+            }
+
+            const badge = document.getElementById('vision-qc-badge');
+            const desc = document.getElementById('vision-gate-desc');
+            const count = document.getElementById('vision-defect-count');
+
+            if (hasVisionDefect) {
+                if (badge) {
+                    badge.className = 'badge-fail';
+                    badge.innerHTML = '<i data-lucide="x-circle"></i> QC DEFECT DETECTED';
+                }
+                if (count) {
+                    count.innerText = '1 CRITICAL DEFECT';
+                    count.style.color = 'var(--neon-red)';
+                }
+                if (desc) desc.innerText = cfg.vision.defectDesc;
+            } else {
+                if (badge) {
+                    badge.className = 'badge-pass';
+                    badge.innerHTML = '<i data-lucide="check-circle"></i> QC PASS';
+                }
+                if (count) {
+                    count.innerText = '0 DEFECTS';
+                    count.style.color = 'var(--neon-green)';
+                }
+                if (desc) desc.innerText = cfg.vision.cleanDesc;
+            }
+            lucide.createIcons();
+        }
+
+        /* =========================================================================
+           MODULE 4: PREDICTIVE MAINTENANCE (Hariharan)
+           ========================================================================= */
+        let isPdmSimulatedRisk = false;
+
+        function setupPdmModule() {
+            renderPdmChart();
+        }
+
+        function togglePdmFailureSimulation() {
+            isPdmSimulatedRisk = !isPdmSimulatedRisk;
+            const btn = document.getElementById('btn-simulate-failure-risk');
+            if (btn) {
+                btn.innerHTML = isPdmSimulatedRisk
+                    ? '<i data-lucide="rotate-ccw"></i> RESTORE HEALTHY SENSOR STREAM'
+                    : '<i data-lucide="zap-off"></i> SIMULATE CRITICAL WEAR INGESTION';
+            }
+            updatePdmMetrics();
+            renderPdmChart();
+            lucide.createIcons();
+        }
+
+        function updatePdmMetrics() {
+            const badge = document.getElementById('pdm-health-badge');
+            const rulHours = document.getElementById('pdm-rul-hours');
+            const riskPct = document.getElementById('pdm-risk-pct');
+            const classText = document.getElementById('pdm-class-text');
+            const isoHealth = document.getElementById('iso-health');
+            const cfg = INDUSTRY_CONFIGS[currentIndustryConfigId] || INDUSTRY_CONFIGS.plane;
+
+            if (isPdmSimulatedRisk) {
+                if (badge) { badge.className = 'badge-fail'; badge.innerText = 'HEALTH: RISK_OF_FAILURE'; }
+                if (rulHours) { rulHours.innerText = '48'; rulHours.style.color = 'var(--neon-red)'; }
+                if (riskPct) { riskPct.innerText = '89.4%'; riskPct.style.color = 'var(--neon-red)'; }
+                if (classText) { classText.innerText = 'CLASS: 1 (RISK DETECTED)'; classText.style.color = 'var(--neon-red)'; }
+                if (isoHealth) { isoHealth.innerText = 'RISK_OF_FAILURE'; isoHealth.style.color = 'var(--neon-red)'; }
+                document.querySelectorAll('.pdm-sub-health').forEach((el, idx) => {
+                    if (idx === 0) { el.innerText = 'CRITICAL DEGRADATION'; el.style.color = 'var(--neon-red)'; }
+                });
+            } else {
+                if (badge) { badge.className = 'badge-pass'; badge.innerText = 'HEALTH: NORMAL'; }
+                if (rulHours) { rulHours.innerText = cfg.pdm.rulNominal; rulHours.style.color = 'var(--neon-cyan)'; }
+                if (riskPct) { riskPct.innerText = '2.1%'; riskPct.style.color = 'var(--neon-green)'; }
+                if (classText) { classText.innerText = 'CLASS: 0 (HEALTHY)'; classText.style.color = 'var(--neon-green)'; }
+                if (isoHealth) { isoHealth.innerText = 'NORMAL'; isoHealth.style.color = 'var(--neon-green)'; }
+                document.querySelectorAll('.pdm-sub-health').forEach(el => {
+                    el.innerText = 'HEALTHY'; el.style.color = 'var(--neon-green)';
+                });
+            }
+        }
+
+        function renderPdmChart() {
+            const canvas = document.getElementById('pdm-chart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.parentElement.clientWidth - 16;
+            canvas.height = 140;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.strokeStyle = isPdmSimulatedRisk ? '#ff0033' : '#ff2a55';
+            ctx.lineWidth = 2;
+
+            const midY = canvas.height / 2;
+            for (let x = 0; x < canvas.width; x++) {
+                const amp = isPdmSimulatedRisk ? 35 : 12;
+                const freq = isPdmSimulatedRisk ? 0.08 : 0.04;
+                const y = midY + Math.sin(x * freq) * amp + (Math.random() - 0.5) * (isPdmSimulatedRisk ? 20 : 6);
+                if (x === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+        }
+
+        /* =========================================================================
+           INITIALIZATION
+           ========================================================================= */
+        window.addEventListener('DOMContentLoaded', () => {
+            initThreeEngine();
+            setupVehicleTabs();
+            setupTelemetrySliders();
+            setupModuleNavigation();
+            setupAutomation();
+            setupVisionModule();
+            setupPdmModule();
+
+            // Initialize with default Option D (EV Plane)
+            applyIndustryConfig('plane');
+
+            // Set default lock states
+            document.getElementById('lock-dt').style.display = 'inline';
+            document.getElementById('lock-auto').style.display = 'inline';
+            document.getElementById('lock-vision').style.display = 'inline';
+            document.getElementById('lock-pdm').style.display = 'inline';
+        });
+    </script>
+</body>
+</html>
